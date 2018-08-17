@@ -1,6 +1,9 @@
 # Horapatra
-This is a scheduling algorthim, written to help in arranging overlapping chemistry experiments in the most efficient way.
+This is a scheduling algorthim, written to help in arranging overlapping chemistry experiments in the most efficient way we can. 
 
+The name is a portmanteau of two historical figures - Cleopatra (not the queen) was famously an ancient alchemist. From wikipedia:
+> Cleopatra the Alchemist who likely lived during the 3rd century, was a Greek Egyptian alchemist, author, and philosopher. She experimented with practical alchemy but is also credited as one of the four female alchemists that could produce the Philosopher's stone. She is considered to be the inventor of the Alembic, an early tool for analytic chemistry.
+The other component is from the Horae, the greek gods of the passage of time, from which we get the word "hours". 
 
 ## Job Structure
 The code should be able to take an arbitrary number of jobs, and insert them into a workday around each other in the most optimal way. A job has the following structure:
