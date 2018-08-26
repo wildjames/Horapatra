@@ -1,7 +1,5 @@
 #:kivy 1.0.9
 
-<ActiveTable>:
-
 <JobTable>:
     size_hint_y: None
     size_hint_x: 1
@@ -23,8 +21,6 @@
         text: 'Duration'
         size_hint_x: 0.5
 
-
-
 <ReportTable>:
     size_hint_y: None
     height: self.minimum_height
@@ -34,23 +30,32 @@
         text_size: (None, self.height)
         size: self.texture_size
         text: 'Experiment'
+        halign: 'center'
+        valign: 'center'
     Label:
         text_size: (None, self.height)
         size: self.texture_size
         text: 'Task'
-    ActiveTable:
+        halign: 'center'
+        valign: 'center'
+    Label:
         text_size: (None, self.height)
         size: self.texture_size
         text: 'Active?'
-        on_touch_down: self.verify()
+        halign: 'center'
+        valign: 'center'
     Label:
         text_size: (None, self.height)
         size: self.texture_size
         text: 'Flexible?'
+        halign: 'center'
+        valign: 'center'
     Label:
         text_size: (None, self.height)
         size: self.texture_size
         text: 'Duration'
+        halign: 'center'
+        valign: 'center'
 
 <BlankRow>
     text_size: (None, self.height)

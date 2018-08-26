@@ -34,3 +34,35 @@
     background_normal: ''
     background_color: (.45,.45,.45, 1)
     on_release: self.remove_job()
+
+<ActiveLabel>:
+    text_size: (None, self.height)
+    size: self.texture_size
+    halign: 'center'
+    valign: 'center'
+    background_normal: ''
+    background_color: (.5,.5,.5, 0)
+    canvas.before: 
+        Color: 
+            rgb: .5,.5,.5
+        Rectangle: 
+            size: self.width - 4, self.height - 4
+            pos: self.x + 2, self.y + 2
+    on_release: self.verify()
+
+<ExperimentButton>:
+    text_size: (None, self.height)
+    size: self.texture_size
+    halign: 'center'
+    valign: 'center'
+    background_normal: ''
+    background_color: (.5,.5,.5, 0)
+    canvas.before: 
+        Color: 
+            rgb: .5,.5,.5
+        Rectangle: 
+            size: self.width - 4, self.height - 4
+            pos: self.x + 2, self.y + 2
+    on_release: self.preview_experiment()
+
+
