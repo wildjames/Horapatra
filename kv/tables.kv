@@ -1,0 +1,75 @@
+#:kivy 1.0.9
+
+<ActiveTable>:
+
+<JobTable>:
+    size_hint_y: None
+    size_hint_x: 1
+    height: self.minimum_height
+    row_default_height: 30
+    cols: 3
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Job'
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        size_hint_x: 1.5
+        text: 'Experiment'
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Duration'
+        size_hint_x: 0.5
+
+
+
+<ReportTable>:
+    size_hint_y: None
+    height: self.minimum_height
+    row_default_height: 30
+    cols: 5
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Experiment'
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Task'
+    ActiveTable:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Active?'
+        on_touch_down: self.verify()
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Flexible?'
+    Label:
+        text_size: (None, self.height)
+        size: self.texture_size
+        text: 'Duration'
+
+<BlankRow>
+    text_size: (None, self.height)
+    size: self.texture_size
+    halign: 'center'
+    valign: 'center'
+
+<RowText>
+    id: row
+    text_size: (None, self.height)
+    size: self.texture_size
+    halign: 'center'
+    valign: 'center'
+    canvas.before: 
+        Color: 
+            rgb: .5,.5,.5
+        Rectangle: 
+            size: self.width - 4, self.height - 4
+            pos: self.x + 2, self.y + 2
+
+
+

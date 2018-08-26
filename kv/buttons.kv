@@ -1,0 +1,36 @@
+#:kivy 1.0.9
+
+<WriteJobButton>:
+	text: 'Commit Job to File'
+    size_hint_y: None
+    height: 30
+    size_hint_x: None
+    width: 200
+
+<NewExpButton>:
+    size_hint_y: None
+    size_hint_x: None
+    height: 30
+    width: 200
+    text: 'Add new Experiment'
+
+<NewTaskButton>:
+    size_hint_y: None
+    size_hint_x: None
+    height: 30
+    width: 200
+    text: 'Add New Task'
+
+<ExpButton>:
+    exp_name: ''
+    text_size: (None, 20)
+    size: self.texture_size
+    on_release: root.remove_experiment()
+
+<JobButton>
+    job_name: 0
+    text_size: (None, 20)
+    size: self.texture_size
+    background_normal: ''
+    background_color: (.45,.45,.45, 1)
+    on_release: self.remove_job()
