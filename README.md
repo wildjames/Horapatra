@@ -9,9 +9,13 @@ The other component is from the Horae, the greek gods of the passage of time, fr
 
 ## Installation
 First, install requirements
+
 `pip install --user kivy icalendar`
+
 Then, make `main.py` executable
+
 `chmod +x main.py`
+
 The program can now be run simply by the command `./main.py` (if in its directory in the terminal)
 
 ## Job Structure
@@ -72,6 +76,7 @@ To add a job to the queue, click the `Add Job` button to open a drop-down box. T
 
 ### Add previous events
 It's likely that you will have events in your calendar that you'd like the schedule to work around. To do this, you must first export your calendar. In Google calendar, first navigate to your [settings](https://calendar.google.com/calendar/r/settings/export), and export the calendar you'd like to work around. Unfortunately, at present, only a single external calendar is supported, so it may be necessary to [merge some files together](https://michaelion.net/icsMerge/). 
+
 Once you have the `.ics` file downloaded, click the `Add Existing Schedule` button. This will also change the location that the final schedule will be saved to later.
 
 ### Set start date
@@ -84,4 +89,5 @@ When the program is finished, you should have a new schedule .csv in the Schedul
 
 ### Importing the calendar
 Navigate to your [import settings](https://calendar.google.com/calendar/r/settings/import), and upload the file there. Choose which calendar you want to add it to, and click import to push them all in.
+
 Alternatively, double-clicking an .ics file should import the events into your calendar program, if you have one (e.g. Calendar on OSX).
