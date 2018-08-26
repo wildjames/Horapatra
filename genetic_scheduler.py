@@ -13,13 +13,15 @@ The ideal order is found using a genetic algorithm, with the fitness of an indiv
 requires to fit all the tasks in.
 '''
 
-from pprint import pprint
 import numpy as np
 import json
 import time
 import random as rand
 import datetime
 import os
+from icalendar import Calendar, Event
+import pytz
+import socket
 
 
 def get_5_min_time(hh, mm=0):
@@ -101,6 +103,14 @@ def get_task(existing_jobs, jobs, ID):
 			}
 		return task
 
+	if ID == '999998':
+		task = {'name': 'Conflicting',
+				'time': 1,
+				'active': 1,
+				'flexible': 0
+			}
+		return task
+
 	# Just double-check ID is a string...
 	ID = str(ID)
 
@@ -113,6 +123,7 @@ def get_task(existing_jobs, jobs, ID):
 
 	if job_index == 99:
 		job = existing_jobs
+		tas_index = int(ID[2:])
 		task = job[tas_index]
 		return task
 
@@ -252,7 +263,23 @@ def initialise_day(jobs, work_hours, workday_start, workday_end, existing_jobs, 
 
 	init_day = initial_date.isoweekday() -1
 
-	# Add in a blocking task, to account for night times
+	# Add in existing tasks
+	j = 0
+	for task in existing_jobs:
+		task_ID = '99'+str(j).rjust(4, '0')
+		j+= 1
+		start_slot = task['first_slot']
+		time = int(task['time'])
+		for i in range(-1, time+1):
+			try:
+				if job_schedules[-1][start_slot+i] == '':
+					job_schedules[-1][start_slot+i] = task_ID
+				else:
+					job_schedules[-1][start_slot+i] = '999998'
+			except:
+				break
+
+	# Add in a blocking task, to account for night times. Overwrite existing tasks with this
 	for i in range(work_hours):
 		# We only care about where we are in the day, not the week. Use modulo to reduce this down.
 		time = i%day_length
@@ -267,18 +294,6 @@ def initialise_day(jobs, work_hours, workday_start, workday_end, existing_jobs, 
 		# Or on a weekend
 		elif day%7 == 5 or day%7 == 6:
 			job_schedules[-1][i] = '999999'
-
-	j = 0
-	for task in existing_jobs:
-
-		task_ID = '99'+'00'+str(j).rjust(2, '0')
-		j+= 1
-		start_slot = task['first_slot']
-		for i in range(time):
-			try:
-				job_schedules[-1][start_slot+i] = task_ID
-			except:
-				break
 
 	return job_schedules
 
@@ -412,7 +427,7 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 				slot.append(task_ID)
 
 				active = check_active_slot(existing_jobs, jobs, slot)
-				if active >= 2:
+				if active > 1:
 					# Conflicting tasks
 					if debug > 3:
 						print('When starting from slot %d in the schedule, Slot %d has a conflict' % (i, i+j))
@@ -583,6 +598,8 @@ def print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs
 			if ID == '999999':
 				night = 'Night Time.'
 				active = 0
+			if ID == '999998':
+				night = 'Multiples'
 			if night != '':
 				break
 			
@@ -644,11 +661,93 @@ def print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs
 
 	return
 
+def parse_ical_event(event, initial_date):
+	# Get the name
+	name = str(event['SUMMARY'])+' --- '+str(event['DESCRIPTION'])
+
+	# Get the interval time between the start and end of the event
+	start = event['DTSTART'].dt
+	end   = event['DTEND'].dt
+
+	# This is a hack workaround to deal with daylight savings bullshit
+	localtime = pytz.timezone('Europe/London')
+	now = datetime.datetime.now()
+	localtime = localtime.localize(now)
+	if bool(localtime.dst()):
+		print('We are currently in daylight savings time.')
+		print(start.strftime('%H:%M'))
+		start = start + datetime.timedelta(hours=1)
+		print(start.strftime('%H:%M'))
+		end   = end   + datetime.timedelta(hours=1)
+
+	interval_time = end - start
+	interval_time = interval_time.total_seconds()//(5*60)
+
+	# If the last word in the description is 'False,', then this is an inactive task. Otherwise, it's active.
+	active = event['DESCRIPTION'].split(' ')[-1].lower() != 'false'
+	
+	# Get the first slot equivalent of this event
+	# Detect and fix datetime.date objects
+	if (type(start)) == datetime.date:
+		start = datetime.datetime.combine(start, datetime.datetime.min.time())
+		start = start.replace(tzinfo=pytz.timezone('Europe/London'))
+		
+	first_slot = start - initial_date
+	first_slot = int(first_slot.total_seconds()//(5*60))
+
+	task = {'name': name,
+			'time': interval_time,
+			'active': active,
+			'flexible': 0,
+			'first_slot': first_slot,
+		}
+
+	return task
+
+def parse_csv_event(line, initial_date):
+	# Split into columns
+	line = line.split(',')
+	
+	# Get the event name
+	name = line[0]
+
+	# If the last word in the description is 'False,', then this is an inactive task
+	active = line[6].split(' ')[-1].lower() != 'false'
+	
+	# Get the start and end time/dates
+	start_date, start_time, end_date, end_time = line[1:5]
+
+	# convert strings to datetime objects
+	start_time = datetime.datetime.strptime(start_date.strip()+' '+start_time.strip(), '%m/%d/%Y %H:%M')
+	end_time   = datetime.datetime.strptime(end_date.strip()+' '+end_time.strip(), '%m/%d/%Y %H:%M')
+
+	start_time = start_time.replace(tzinfo=pytz.timezone('Europe/London'))
+	end_time = end_time.replace(tzinfo=pytz.timezone('Europe/London'))
+
+	# Get the interval between them
+	interval_time = end_time - start_time
+	interval_time = interval_time.total_seconds()//(5*60)
+
+	# compute what slot the event will begin in
+	first_slot = start_time - initial_date
+	first_slot = int(first_slot.total_seconds()//(5*60))
+
+	# Construct the task
+	task = {'name': line[0],
+			'time': interval_time,
+			'active': active,
+			'flexible': 0,
+			'first_slot': first_slot,
+		}
+	return task
+
 def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=None):
 	# Print out debugging info?
 	debug = 1
 
 	# print(datetime.datetime.strftime(initial_date, '%m/%d/%Y %H:%M'))
+	initial_date = initial_date.replace(tzinfo=pytz.timezone('Europe/London'))
+	print(bool(initial_date.dst()))
 
 	# Initialise the schedule
 	work_hours    = 2*24
@@ -685,49 +784,27 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 
 	existing_jobs = []
 
-	try:
+	# Read in a csv file, if the extension matches
+	if existing_tasks[-4:]=='.csv':
+
 		with open(existing_tasks, 'r') as f:
+		# Get the headers, just 'cos
 			headers = f.readline()
 			headers = headers.split(',')
 			j=0
 			for line in f:
-				line = line.split(',')
-				
-				# Get the event name
-				name = line[0]
+				existing_jobs.append(parse_csv_event(line, initial_date))
 
-				# If the last word in the description is 'False,', then this is an inactive task
-				active = line[6].split(' ')[-1].lower() != 'false'
-				
-				# Get the start and end time/dates
-				start_date, start_time, end_date, end_time = line[1:5]
+	# Or, read in an icalendar file
+	elif existing_tasks[-4:]=='.ics':
+		file = open(existing_tasks, 'rb')
+		cal = Calendar.from_ical(file.read())
 
-				# convert strings to datetime objects
-				start_time = datetime.datetime.strptime(start_date.strip()+' '+start_time.strip(), '%m/%d/%Y %H:%M')
-				end_time   = datetime.datetime.strptime(end_date.strip()+' '+end_time.strip(), '%m/%d/%Y %H:%M')
+		for event in cal.walk('vevent'):
+			existing_jobs.append(parse_ical_event(event, initial_date))
 
-				# Get the interval between them
-				interval_time = end_time - start_time
-				interval_time = interval_time.total_seconds()//(5*60)
-
-				# compute what slot the event will begin in
-				first_slot = start_time - initial_date
-				first_slot = int(first_slot.total_seconds()//(5*60))
-
-				task = {'name': line[0],
-						'time': interval_time,
-						'active': active,
-						'flexible': 0,
-						'first_slot': first_slot,
-					}
-
-				existing_jobs.append(task.copy())
-	except:
-		existing_jobs = []
-
-
-	for i in existing_jobs:
-		print i
+	for task in existing_jobs:
+		print(task)
 
 	# Each permutation list will be of the length n_tasks, and contain any combination of the numbers 0 - (n_jobs-1)
 	# i.e. [ [0,0,0,0], [0,0,0,1], [0,0,0,2], [0,0,1,0], ... [2,2,2,2] ]
@@ -850,9 +927,9 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	now = datetime.datetime.now()
 
 	# The name of the csv file to produce
-	oname = 'generated-on-%s_%s-jobs_schedule.csv' % (now.strftime("%d-%m-%y"), n_jobs) 
+	oname = 'generated-on-%s_%s-jobs_schedule.ics' % (now.strftime("%d-%m-%y"), n_jobs) 
 
-	print('Creating a .csv file of this schedule for importing into google calendar.')
+	print('Creating a .ics file of this schedule for importing into google calendar.')
 
 	if destination == '':
 		destination = os.getcwd()
@@ -864,27 +941,12 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	if not os.path.isdir(destination):
 		os.makedirs(destination)
 
-	f = open(oname, 'w')
-	# This seems poorly documented. Use the following format:
-	#        string , MM/DD/YYYY, 24H time  , MM/DD/YYYY, 24H   , bool         , string     , 
-	f.write('Subject, Start Date, Start Time, End Date, End Time, All Day Event, Description, Location, Private \n')
 
-	# Subject: '<Job Name>, <Experiment Name>'
-	# Description: '<Task Name'>
-
-	# f.write("Example subject, 08/18/2018, 00:00, 08/18/2018, 01:00, false, 'Description String', , \n")
-
-	# These will be the date and time of the first slot, i.e. midnight of Sunday, leading into monday.
-	if initial_date == None:
-		initial_date = datetime.datetime(now.year, now.month, now.day, minute=0, hour=0)
-		initial_date += datetime.timedelta(days=(7 - initial_date.weekday()))	
-
-	# For each job, loop through the schedule and detect the start and end slots of each task. 
-	# Convert these slot indexes to times, and create a new entry in teh csv file for this event.
+	cal = Calendar()
+	cal.add('version', '2.0')
 	for j, schedule in enumerate(job_schedules[:-1]):
-		
-		task_ID = filter(None, schedule)[0] 
-		
+		# Get the first task in the schedule
+		task_ID = filter(None, schedule)[0]
 		while task_ID:
 			# Get the first and last slots of this task
 			start_slot = schedule.index(task_ID)
@@ -898,20 +960,83 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 			start_time = initial_date + datetime.timedelta(minutes = (5*start_slot))
 			end_time   = initial_date + datetime.timedelta(minutes = (5*end_slot))
 
-			start_date = start_time.strftime("%m/%d/%Y")
-			end_date   = end_time.strftime("%m/%d/%Y")
-
-			start_time = start_time.strftime("%H:%M")
-			end_time   = end_time.strftime("%H:%M")
-
 			# Construct the csv entry
+			# Subject: '<Job Name>, <Experiment Name>'
+			# Description: '<Task Name'>
 			subject     = '"%s - %s"' % (jobs[j]['jobName'], jobs[j]['order'][exp_index])
-			description = task['name']
+			description = '%s - Active? %r' % (task['name'], bool(task['active']))
 
-			f.write('%s,%s,%s,%s,%s,,%s - Active? %r,,\n' % 
-				(subject, start_date, start_time, end_date, end_time, description, bool(task['active']) )
-				)
+			# Some calendars (e.g. Outlook) require a globally unique UID. I'll use <JobGen_[start_time]-[end_time]@[device_name]>
+			UID = 'JobGen_%s-%s@%s' % (start_time, end_time, socket.gethostname())
+
+			# Build the event
+			event = Event()
+
+			event.add('dtstart', start_time)
+			event.add('dtend', end_time)
+			event.add('summary', subject)
+			event.add('description', description)
+			event.add('dtstamp', datetime.datetime.now())
+			event.add('uid', UID)
+
+			# Add it to the calendar
+			cal.add_component(event)
 
 			task_ID = incriment_ID(existing_jobs, jobs, task_ID)
 
+	f = open(oname, 'wb')
+	f.write(cal.to_ical())
 	f.close()
+
+	### .CSV LEGACY CODE. DISUSED.
+	# f = open(oname, 'w')
+	# # This seems poorly documented. Use the following format:
+	# #        string , MM/DD/YYYY, 24H time  , MM/DD/YYYY, 24H   , bool         , string     , 
+	# f.write('Subject, Start Date, Start Time, End Date, End Time, All Day Event, Description, Location, Private \n')
+
+	# # Subject: '<Job Name>, <Experiment Name>'
+	# # Description: '<Task Name'>
+
+	# # f.write("Example subject, 08/18/2018, 00:00, 08/18/2018, 01:00, false, 'Description String', , \n")
+
+	# # These will be the date and time of the first slot, i.e. midnight of Sunday, leading into monday.
+	# if initial_date == None:
+	# 	initial_date = datetime.datetime(now.year, now.month, now.day, minute=0, hour=0)
+	# 	initial_date += datetime.timedelta(days=(7 - initial_date.weekday()))	
+
+	# # For each job, loop through the schedule and detect the start and end slots of each task. 
+	# # Convert these slot indexes to times, and create a new entry in teh csv file for this event.
+	# for j, schedule in enumerate(job_schedules[:-1]):
+		
+	# 	task_ID = filter(None, schedule)[0] 
+		
+	# 	while task_ID:
+	# 		# Get the first and last slots of this task
+	# 		start_slot = schedule.index(task_ID)
+	# 		end_slot   = len(schedule) - schedule[::-1].index(task_ID)
+
+	# 		# retrieve the task data
+	# 		task = get_task(existing_jobs, jobs, task_ID)
+	# 		job_index, exp_index, tas_index = parse_ID(task_ID)
+
+	# 		# Compute the date and time of the starting slot
+	# 		start_time = initial_date + datetime.timedelta(minutes = (5*start_slot))
+	# 		end_time   = initial_date + datetime.timedelta(minutes = (5*end_slot))
+
+	# 		start_date = start_time.strftime("%m/%d/%Y")
+	# 		end_date   = end_time.strftime("%m/%d/%Y")
+
+	# 		start_time = start_time.strftime("%H:%M")
+	# 		end_time   = end_time.strftime("%H:%M")
+
+	# 		# Construct the csv entry
+	# 		subject     = '"%s - %s"' % (jobs[j]['jobName'], jobs[j]['order'][exp_index])
+	# 		description = task['name']
+
+	# 		f.write('%s,%s,%s,%s,%s,,%s - Active? %r,,\n' % 
+	# 			(subject, start_date, start_time, end_date, end_time, description, bool(task['active']) )
+	# 			)
+
+	# 		task_ID = incriment_ID(existing_jobs, jobs, task_ID)
+
+	# f.close()

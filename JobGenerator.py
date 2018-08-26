@@ -13,8 +13,6 @@ from kivy.lang import Builder
 from kivy.graphics.instructions import Canvas
 from kivy.graphics.instructions import InstructionGroup
 
-from pprint import pprint
-
 from os import listdir 
 # kv_path = './kv/'
 # for kv in listdir(kv_path):
@@ -41,6 +39,8 @@ class ExpButton(Button):
         self.exp_name = ''
 
     def remove_experiment(self):
+        for i in dir(self.parent.parent.parent):
+            print(i)
         self.parent.parent.parent.remove_experiment(self.exp_name)
         
 
@@ -56,9 +56,13 @@ class RowText(Label):
 class BlankRow(Label):
     pass
 
-class ActiveTable(Label):
+class ActiveLabel(Button):
+    def build(self):
+        self.exp_name = ''
+        self.task_index = 0
+
     def verify(self):
-        print('Pressed!')
+        self.parent.parent.parent.remove_task(self.exp_name, self.task_index)
 
 class Container(GridLayout):
     def __init__(self, **kwargs):
@@ -112,8 +116,14 @@ class Container(GridLayout):
                     self.Table.add_widget(BlankRow())
 
                 self.Table.add_widget(  RowText(text=task['name'] ) )
-                self.Table.add_widget(  RowText(text=str(task['active']) ) )
+                
+                self.active_text = ActiveLabel(text=str(task['active']))
+                self.active_text.exp_name = exp_name
+                self.active_text.task_index = i
+                self.Table.add_widget(self.active_text)
+                
                 self.Table.add_widget(  RowText(text=str(task['flexible']) ) )
+                
                 self.Table.add_widget(  RowText(text=str(task['time']) ) )
 
         self.ids.ReportBox.add_widget(self.Table)
@@ -155,6 +165,10 @@ class Container(GridLayout):
         f = open(fname, 'w')
         print >> f, j
         f.close()
+
+    def remove_task(self, exp_name, task_index):
+        self.job[exp_name][task_index]['active'] = (not self.job[exp_name][task_index]['active'])
+        self.update_report()
 
     def add_new_task(self):
         # First, check that the inputs are valid

@@ -16,6 +16,7 @@ from kivy.uix.dropdown import DropDown
 from kivy.clock import Clock
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
 
 # Modules I need
 import json
@@ -23,7 +24,6 @@ from datetime import date, timedelta
 import datetime
 from functools import partial
 import threading
-from pprint import pprint
 
 # System libraries
 import sys
@@ -54,6 +54,17 @@ class JobButton(Button):
 class DropDownButton(Button):
     pass
 
+class ReportTable(GridLayout):
+    pass
+
+class ExperimentButton(Button):
+    def build(self):
+        self.job_name = ''
+        self.exp_name = ''
+
+    def preview_experiment(self):
+        app.root.preview_experiment(self.job_name)
+
 class JobTable(GridLayout):
     pass
 
@@ -68,9 +79,13 @@ class ExistingEventPicker(BoxLayout):
         return os.getcwd()
 
     def load(self, path, selection):
-        app.root.existing = os.path.join(path, selection[0])
-        file = selection[0].split('/')[-1]
-        app.root.ids.ExistingFile.text = file
+        if selection != []:
+            app.root.existing = os.path.join(path, selection[0])
+            file = selection[0].split('/')[-1]
+            app.root.ids.ExistingFile.text = file
+        else:
+            app.root.existing = ''
+            app.root.ids.ExistingFile.text = ''
 
         ### Close the popup
         self.parent.parent.parent.dismiss()
@@ -195,7 +210,12 @@ class PrimaryWindow(GridLayout):
                 if i:
                     self.JobsTable.add_widget(BlankRow())
                 
-                self.JobsTable.add_widget(RowText(text=exp_name, size_hint_x=1.5))
+                # self.JobsTable.add_widget(RowText(text=exp_name, size_hint_x=1.5))
+                self.ExpButton = ExperimentButton(text=exp_name, size_hint_x=1.5)
+                self.ExpButton.job_name = job
+                self.ExpButton.exp_name = exp_name
+                self.JobsTable.add_widget(self.ExpButton)
+
                 self.JobsTable.add_widget(RowText(text=exp_length, size_hint_x=0.5))
             j += 1
         
@@ -205,6 +225,53 @@ class PrimaryWindow(GridLayout):
     def remove_job(self, job):
         del self.jobList[job]
         self.update_job_list()
+
+    def preview_experiment(self, job_name):
+        print(job_name)
+        job = self.get_job(self.json_path+job_name)
+
+        order = job['order']
+
+        # Reinitialise the table
+        self.ExperimentPreview = ReportTable()
+        
+        # Repopulate the table
+        for exp_name in order:  
+            experiment = job[exp_name]
+
+            # How long will this experiment take?
+            exp_time = 0.0
+            for task in experiment:
+                exp_time += float(task['time'])
+            
+            # Create an experiment button, and add it to the table
+            self.ExperimentPreview.add_widget(
+                Label(
+                    text=( '%s\n%d min' % (exp_name, exp_time) ) )
+                )
+
+            for i, task in enumerate(job[exp_name]):
+                if i > 0:
+                    self.ExperimentPreview.add_widget(BlankRow())
+
+                self.ExperimentPreview.add_widget(  RowText(text=task['name'] ) )
+                
+                self.ExperimentPreview.add_widget(  RowText(text='%r' % bool(task['active']) ) )
+                
+                self.ExperimentPreview.add_widget(  RowText(text='%r' % bool(task['flexible']) ) )
+                
+                self.ExperimentPreview.add_widget(  RowText(text=str(task['time']) ) )
+
+        content = ScrollView(size_hint_y=1)
+        content.add_widget(self.ExperimentPreview)
+
+        self.popup = Popup(title='Job Preview',
+            content = content,
+            size_hint= (0.9, 0.7)
+            )
+
+        self.popup.open()
+
 
     def initial_date(self, x):
         self.date = x
@@ -224,6 +291,7 @@ class PrimaryWindow(GridLayout):
         self.popup.open()
 
     def close(self):
+
         app.stop()
 
     def create_job(self):
@@ -259,7 +327,7 @@ class PrimaryWindow(GridLayout):
         fnames = [self.json_path+x for x in self.jobList]
         initial_date = datetime.datetime.combine(self.date, datetime.datetime.min.time())
         self.dest = os.path.dirname(self.existing)
-        
+
         try:
             if self.thread.is_alive():
                 print("I'm already optimising a schedule! If you REALLY need to kill it, close the main app window.")
