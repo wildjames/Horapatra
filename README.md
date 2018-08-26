@@ -1,11 +1,18 @@
 # Horapatra
 This is a scheduling algorthim, written to help in arranging overlapping chemistry experiments in the most efficient way we can. 
 
-The name is a portmanteau of two historical figures - Cleopatra (not the queen) was famously an ancient alchemist. From wikipedia:
+The name is a portmanteau of two historical figures - Cleopatra (not the queen) was an ancient alchemist. From wikipedia:
 
-> Cleopatra the Alchemist who likely lived during the 3rd century, was a Greek Egyptian alchemist, author, and philosopher. She experimented with practical alchemy but is also credited as one of the four female alchemists that could produce the Philosopher's stone. She is considered to be the inventor of the Alembic, an early tool for analytic chemistry.
+> Cleopatra the Alchemist, who likely lived during the 3rd century, was a Greek Egyptian alchemist, author, and philosopher. She experimented with practical alchemy but is also credited as one of the four female alchemists that could produce the Philosopher's stone. She is considered to be the inventor of the Alembic, an early tool for analytic chemistry.
 
 The other component is from the Horae, the greek gods of the passage of time, from which we get the word "hours". 
+
+## Installation
+First, install requirements
+`pip install --user kivy icalendar`
+Then, make `main.py` executable
+`chmod +x main.py`
+The program can now be run simply by the command `./main.py` (if in its directory in the terminal)
 
 ## Job Structure
 The code should be able to take an arbitrary number of jobs, and insert them into a workday around each other in the most optimal way. A job has the following structure:
@@ -24,7 +31,7 @@ The code should be able to take an arbitrary number of jobs, and insert them int
 
 The script `jobgen.py` is used to take user input and covert to the JSON format that we store job data as.
 
-## Requirements
+## Success Criteria
 Tasks are ordered within an experiment, and experiments are in turn ordered within a job. Jobs, however, are unordered, hence this script.
 
 Each experiment can be either flexible or iflexible, in that it might be important that the tasks in an experiment MUST proceed directly form one to the next. This is defined by the user when defining the job parameters. If the task is flexible, this flags that we can do one step and move one whenever it is convenient rather than immediately.
