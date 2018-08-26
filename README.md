@@ -56,7 +56,7 @@ The GUI follows a few steps. From the beginning;
 
 
 ### Creating a Job
-Here, a new experiment can be defined by filling in the box. When the `Add Task` button is clicked, that task is added to the experiment name in the input box. This can be done 'out of order', i.e. you can add tasks to a new experiment, and go back and add more tasks to a previous experiment. Don't forget to define the duration, and flag for if each task is active or inactive! There is also a `flexible` tag, which tells the code that the tasks in that experiment don't absolutely need to be next to each other in the final schedule. 
+Here, a new experiment can be defined by filling in the box. When the `Add Task` button is clicked, that task is added to the experiment name in the input box. This can be done 'out of order', i.e. you can add tasks to a new experiment, and go back and add more tasks to a previous experiment. Don't forget to define the duration, and flag for if each task is active or inactive (this can be toggled by clicking the labels, though). There is also a `flexible` tag, which tells the code that the tasks in that experiment don't absolutely need to be next to each other in the final schedule. This can also be retrospectively toggled, by re-entering the experiment name and clicking the flexible button. The name of the task, and its duration are not alterable after entry, but this could probably be implimented if needed. For now, it's easy enough to just delete the experiment and re-enter the fields.
 
 Finally, click the `Commit to file` button to save your job. Don't forget to set a memorable name so you can find it later.
 
