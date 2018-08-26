@@ -11,7 +11,7 @@ fnames = [	'CMK-F-1.json',
 			'CMk-FT-1.json'
 		]
 
-version = 1
+version = 0
 
 
 # print out debugging?
@@ -193,7 +193,10 @@ def check_active_slot(slot):
 	active = 0
 	for ID in slot:
 		task = get_task(ID)
-		active += task['active']
+		try:
+			active += task['active']
+		except:
+			True
 	return active
 
 def str2int(string, base):
@@ -369,7 +372,7 @@ if version == 0:
 				if debug:
 					print(task)
 
-				task_schedule += [[ID] for i in range(task['time'])]
+				task_schedule += [ID for i in range(task['time'])]
 				ID = incriment_ID(ID)
 		
 		# if debug:

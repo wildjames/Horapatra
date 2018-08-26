@@ -1,0 +1,198 @@
+#:kivy 1.0.9
+
+<CustomDropDown>:
+
+<DropDownButton>:
+    size_hint_y: None
+    height: 30
+    on_release: self.parent.parent.select(self.text)
+
+<ExistingEventPicker>:
+    id: existing_picker
+    orientation: "vertical"
+
+    FileChooserListView:
+        id: filechooser
+        filters: ['*.csv']
+        path: root.getcwd()
+
+    BoxLayout:
+        size_hint_y: None
+        height: 30
+        Button:
+            id: exit_button
+            text: "Cancel"
+
+        Button:
+            text: "Load"
+            on_release: root.load(filechooser.path,filechooser.selection)
+
+<PrimaryWindow>:
+    id: Primary
+    cols: 1
+    height: self.minimum_height
+
+    GridLayout:
+        id: JobRow
+        rows: 1
+        size_hint_y: None
+        height: self.minimum_height
+        canvas.before: 
+            Color: 
+                rgb: .25,.25,.25
+            Rectangle: 
+                pos: self.pos
+                size: (JobRow.width, JobRow.height)
+
+        Button:
+            id: mainbutton
+            text: 'Add Job'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 20)
+            size: 250, 30
+            background_normal: ''
+            background_color: (.4,.4,.4, 1)
+
+        Label:
+            text: ''
+
+        Button:
+            text: 'Create new Job'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 30)
+            width: 200
+            height: 30
+            halign: 'center'
+            valign: 'center'
+            on_release: root.create_job()
+
+    ScrollView:
+        id: JobReportBox
+        size_hint_y: None
+        height: root.height - 90
+        canvas.before:
+            Color:
+                rgb: .15,.15,.15
+            Rectangle:
+                pos: self.pos
+                size: JobReportBox.width, JobReportBox.height
+
+    Widget:
+        id: separator
+        size_hint_y: None
+        height: 2
+        canvas:
+            Color:
+                rgb: .1, .1, .1
+            Rectangle:
+                pos: 0, separator.center_y
+                size: separator.width, 2
+
+    GridLayout:
+        id: ScheduleRow
+        rows: 1
+        canvas.before: 
+            Color: 
+                rgb: .25,.25,.25
+            Rectangle: 
+                pos: self.pos
+                size: (ScheduleRow.width, ScheduleRow.height)
+        Label:
+            id: ExistingFile
+            text: ''
+            size_hint_y: None
+            height: 30
+            text_size: self.size
+            padding_x: 10
+            halign: 'left'
+            valign: 'center'
+
+        Button:
+            id: ExistingTasksButton
+            text: 'Add Existing Schedule'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 30)
+            width: 200
+            height: 30
+            halign: 'center'
+            valign: 'center'
+            on_release: root.get_existing()
+
+    Widget:
+        id: separator
+        size_hint_y: None
+        height: 2
+        canvas:
+            Color:
+                rgb: .1, .1, .1
+            Rectangle:
+                pos: 0, separator.center_y
+                size: separator.width, 2
+
+    GridLayout:
+        id: LastRow
+        rows: 1
+        canvas.before: 
+            Color: 
+                rgb: .25,.25,.25
+            Rectangle: 
+                pos: self.pos
+                size: (LastRow.width, LastRow.height)
+
+        Button:
+            text: 'Select Date'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 30)
+            width: 100
+            height: 30
+            halign: 'center'
+            valign: 'center'
+            on_release: root.select_date()
+
+        Label:
+            id: DateLabel
+            text: ''
+            size_hint_y: None
+            height: 30
+            text_size: self.size
+            padding_x: 10
+            halign: 'left'
+            valign: 'center'
+
+#        ToggleButton:
+#            id: GeneticButton
+#            text: 'Genetic Algorithm?'
+#            size_hint_x: None
+#            size_hint_y: None
+#            width: 150
+#            height: 30
+#            halign: 'center'
+#            valign: 'center'
+
+        Button:
+            id: RunScheduleButton
+            text: 'Generate Schedule'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 30)
+            width: 150
+            height: 30
+            halign: 'center'
+            valign: 'center'
+            on_release: root.generate_schedule()
+
+        Button:
+            text: 'Exit'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 30)
+            width: 100
+            height: 30
+            halign: 'center'
+            valign: 'center'
+            on_release: root.close()
+
