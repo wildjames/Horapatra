@@ -60,7 +60,22 @@ Here, a new experiment can be defined by filling in the box. When the `Add Task`
 
 Finally, click the `Commit to file` button to save your job. Don't forget to set a memorable name so you can find it later.
 
-###
+### Add Jobs
+To add a job to the queue, click the `Add Job` button to open a drop-down box. This should contain any jobs you defined in the `Create Job` popup. Clicking a jobs name adds it to the queue, and pushes it to the main table. Clicking on a job in the table will remove it. Note that the queue can have duplicate jobs in it, but they will create events with the same names in the final calendar.
+
+### Add previous events
+It's likely that you will have events in your calendar that you'd like the schedule to work around. To do this, you must first get your calendar in CSV form. When writing this, I didn't realise that google calendar doesnt export .csv, only .ical. I will re-write this part of the code to accept .ical, but for now, this section is considered broken.
+
+### Set start date
+Easy enough, click the button and select the date from the calendar. The default start date is set to the next monday.
+
+### Generate Schedule
+Clicking this button launches the optimisation code. This is a genetic algoithm, in an attempt to explore the massive parameter space created by the problem, and 'breeds' schedules to have as short a length as possible. This can take a while, so don't close the main window until it's done.
+
+When the program is finished, you should have a new schedule .csv in the Schedules directory. This contains the information needed to import the events into your calendar.
+
+### Importing the calendar
+Navigate to your [import settings](https://calendar.google.com/calendar/r/settings/import), and upload the file there. Choose which calendar you want to add it to, and click import to push them all in. Alternatively, double-clicking an .ics file should import the events into your calendar program, if you have one (e.g. Calendar on OSX).
 
 ## Future Work
 The project is currently incomplete. Plans are to integrate google calendar, to allow users to click a link that imports the generated schedule into their calendar automatically, rather than having to either copy by hand or print the final schedule out like some kind of cave troll. This idea is on the backburner until I can figure out why the google API is not working properly on my new (mac) laptop...
