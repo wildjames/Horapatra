@@ -46,7 +46,21 @@ Initially, the code followed a simple prescription; the longest experiment avail
 Each permutation is treated as a "chromosome", and is evaluated. The fitness of each is the length of the schedule it produces, and the top 50% are bred together. Each takes two random partners and produces an offspring with them, by taking subsequent chunks of each (of random length between 1 and 10 genes long) until the child is fully formed. Convergence is reached if the cohort becomes too inbred (the standard deviaiton falls below 10% of the best schedule length), or if no change is seen for 10 generations. This version of the code typically takes several minutes to run, mostly due to the long time it takes to evaluate an individual which can be on the order of 1-2 seconds per chromosome.
 
 ## Usage
-The GUI follows a few steps. First, jobs must be defined, and this can be done with the built-in tool. This can be accessed in the `Create new Job` popup.
+The GUI follows a few steps. From the beginning;
+- Create Jobs
+- Add jobs to queue
+- Add previous events
+- Set start date
+- Generate Schedule
+- Import .csv into your calendar
+
+
+### Creating a Job
+Here, a new experiment can be defined by filling in the box. When the `Add Task` button is clicked, that task is added to the experiment name in the input box. This can be done 'out of order', i.e. you can add tasks to a new experiment, and go back and add more tasks to a previous experiment. Don't forget to define the duration, and flag for if each task is active or inactive! There is also a `flexible` tag, which tells the code that the tasks in that experiment don't absolutely need to be next to each other in the final schedule. 
+
+Finally, click the `Commit to file` button to save your job. Don't forget to set a memorable name so you can find it later.
+
+###
 
 ## Future Work
 The project is currently incomplete. Plans are to integrate google calendar, to allow users to click a link that imports the generated schedule into their calendar automatically, rather than having to either copy by hand or print the final schedule out like some kind of cave troll. This idea is on the backburner until I can figure out why the google API is not working properly on my new (mac) laptop...
