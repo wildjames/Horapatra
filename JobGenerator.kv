@@ -1,0 +1,60 @@
+#:kivy 1.0.9
+
+<Container>:
+    cols: 1
+    GridLayout:
+        id: JobLine
+        cols: 4
+        size_hint_y: None
+        height: 30
+        JobNameTextInput:
+            id: JobNameInput
+        NewExpTextInput:
+            id: NewExpInput
+        WriteJobButton:
+            on_release: root.write_to_file()
+
+    GridLayout:
+        rows: 1
+        size_hint_y: None
+        height: 30
+        NewTaskTextInput:
+            id: TaskName
+        TextInput:
+            id: TaskDuration
+            write_tab: False
+            multiline: False
+            width: 50
+            hint_text: 'Duration, minutes'
+        ToggleButton:
+            id: Active
+            size_hint_x: None
+            width: 75
+            text: 'Active?'
+        ToggleButton:
+            id: Flex
+            size_hint_x: None
+            width: 75
+            text: 'Flexible?'
+            on_press: root.update_flexible()
+        NewTaskButton:
+            on_release: root.add_new_task()
+            
+    ScrollView:
+        id: ReportBox
+        size_hint_y: None
+        height: root.height - 90
+#        canvas.before:
+#            Color:
+#                rgb: .25,.25,.25
+#            Rectangle:
+#                pos: self.pos
+#                size: ReportBox.width, ReportBox.height
+
+    GridLayout:
+        id: LastRow
+        rows: 1
+        size_hint_y: None
+        height: 30
+        Label:
+            text: ''
