@@ -14,15 +14,17 @@ First, install requirements
 
 `pip install --user --upgrade kivy icalendar numpy pytz`
 
-Then, if you're on UNIX, make `main.pyw` executable
+### Unix (Linux/OSX)
+Then, make `main.pyw` executable
 
 `chmod +x main.pyw`
 
-The program can now be run by the command `./main.pyw`
+The program can now be run by the command `./main.pyw`, or however you like to launch your scripts. Google is your friend if you haven't done this before.
 
+### Windows
 For windows, `.pyw` files are automatically executed with python, so all you have to do is copy the BigBitches shortcut to your desktop (or wherever), and double-click it. Be aware! you still need to have python installed for this to work properly!
 
-To install python, get [The latest version](https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi), and install that. It should then work fine.
+To install python, get [The latest version](https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi), and install that. It should then work fine. [There are loads of tutorials online to install python](https://www.howtogeek.com/197947/how-to-install-python-on-windows/) - you want python 2.7.
 
 ## Job Structure
 The code should be able to take an arbitrary number of jobs, and insert them into a workday around each other in the most optimal way. A job has the following structure:
