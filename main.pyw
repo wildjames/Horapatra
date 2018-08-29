@@ -358,6 +358,7 @@ class PrimaryWindow(GridLayout):
     def check_thread(self, *args, **kwargs):
         if not self.thread.is_alive():
             self.popup.content = Label(text="Done! I've put your new schedule on the desktop.")
+            self.thread_watcher.cancel()
 
 
 class SchedulerApp(App):
