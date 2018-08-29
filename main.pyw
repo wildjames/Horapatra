@@ -82,7 +82,12 @@ class ExistingEventPicker(BoxLayout):
     def load(self, path, selection):
         if selection != []:
             app.root.existing = os.path.join(path, selection[0])
-            file = selection[0].split('/')[-1]
+            
+            if '/' in selection[0]:
+                file = selection[0].split('/')[-1]
+            elif '\\' in selection[0]:
+                file = selection[0].split('\\')[-1]
+
             app.root.ids.ExistingFile.text = file
         else:
             app.root.existing = ''
