@@ -10,13 +10,19 @@ The other component is from the Horae, the greek gods of the passage of time, fr
 ## Installation
 First, install requirements
 
-`pip install --user kivy icalendar`
+`pip install --user --upgrade kivy icalendar numpy pytz`
 
-Then, make `main.py` executable
+Then, if you're on UNIX, make `main.pyw` executable
 
-`chmod +x main.py`
+`chmod +x main.pyw`
 
-The program can now be run simply by the command `./main.py` (if in its directory in the terminal)
+The program can now be run simply by the command `./main.pyw`
+
+For windows, `.pyw` files are automatically executed with python, so all you have to do is copy the BigBitches shortcut to your desktop (or wherever), and double-click it. Be aware! you still need to have python installed for this to work properly!
+
+To install python, get [The latest version](https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi), and install that. Then, hit the windows key and R at the same time and type `cmd` in the popup. To make python accessible anywhere, paste the following into the black box that appears: 
+
+`[Environment]::SetEnvironmentVariable("Path", "$env:Path;C:\Python27\;C:\Python27\Scripts\", "User")`
 
 ## Job Structure
 The code should be able to take an arbitrary number of jobs, and insert them into a workday around each other in the most optimal way. A job has the following structure:
