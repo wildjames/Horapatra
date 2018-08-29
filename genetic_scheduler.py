@@ -22,7 +22,7 @@ import os
 from icalendar import Calendar, Event
 import pytz
 import socket
-
+from shutil import copyfile
 
 def get_5_min_time(hh, mm=0):
 	'''takes hours and minutes, and converts it to the proper index for the schedule. Rounds mm DOWN to the nearest 5'''
@@ -948,6 +948,9 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 
 	print('Creating a .ics file of this schedule for importing into google calendar.')
 
+	# Desktop 
+	desktop_loc = os.path.expanduser("~/Desktop") +'/'+ oname
+
 	if destination == '':
 		destination = os.getcwd()
 		destination += '/Schedules'
@@ -1009,6 +1012,9 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	f = open(oname, 'wb')
 	f.write(cal.to_ical())
 	f.close()
+
+	print("I'll copy to %s" % desktop_loc)
+	copyfile(oname, desktop_loc)
 
 	return oname
 

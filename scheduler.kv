@@ -68,6 +68,17 @@
             valign: 'center'
             on_release: root.create_job()
 
+        Button:
+            text: '?'
+            size_hint_x: None
+            size_hint_y: None
+            text_size: (None, 30)
+            width: 30
+            height: 30
+            halign: 'center'
+            valign: 'center'
+            on_release: root.help()
+
     ScrollView:
         id: JobReportBox
         size_hint_y: None

@@ -1,9 +1,6 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 
-from pprint import pprint
-import numpy as np
-import matplotlib as mpl
 import json
 
 fnames = [	'CMK-F-1.json',
