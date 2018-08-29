@@ -10,6 +10,7 @@ from kivy.uix.button import Button
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.lang import Builder
+from kivy.uix.popup import Popup
 from kivy.graphics.instructions import Canvas
 from kivy.graphics.instructions import InstructionGroup
 
@@ -165,6 +166,9 @@ class Container(GridLayout):
         f = open(fname, 'w')
         print >> f, j
         f.close()
+
+        self.popup = Popup(title='', content=Label(text="Done!"), size_hint=(.3, .3))
+        self.popup.open()
         
     def remove_task(self, exp_name, task_index):
         self.job[exp_name][task_index]['active'] = (not self.job[exp_name][task_index]['active'])

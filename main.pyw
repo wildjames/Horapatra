@@ -24,6 +24,7 @@ from datetime import date, timedelta
 import datetime
 from functools import partial
 import threading
+import webbrowser
 
 # System libraries
 import sys
@@ -129,6 +130,9 @@ class PrimaryWindow(GridLayout):
         # Schedule the updates
         Clock.schedule_interval(self.update_dropdown, 1)
         Clock.schedule_interval(self.update_job_list, 10)
+
+    def help(self):
+        webbrowser.open_new_tab('https://www.github.com/WildJames343/Horapatra')
 
     def update_dropdown(self, *args):
         # Instantiate the dropdown menu for job JSONs in our folder
@@ -339,7 +343,22 @@ class PrimaryWindow(GridLayout):
             target=sched.run_scheduler, args=(fnames, self.dest, initial_date, self.existing)
             )
         self.thread.daemon = True
+
         self.thread.start()
+
+        self.popup = Popup(
+            title='Generating Schedule...',
+            content=Label(text='Working...'),
+            size_hint=(0.5, 0.3),
+            )
+        self.popup.open()
+
+        self.thread_watcher = Clock.schedule_interval(self.check_thread, 0.5)
+
+    def check_thread(self, *args, **kwargs):
+        if not self.thread.is_alive():
+            self.popup.content = Label(text="Done! I've put your new schedule on the desktop.")
+
 
 class SchedulerApp(App):
 
