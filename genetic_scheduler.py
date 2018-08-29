@@ -920,14 +920,14 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	best_individual = best_individuals[best_scores.index(min(best_scores))]
 	print('The best individual was %s' % ''.join([str(x) for x in best_individual]))
 
-	print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs, best_individual, work_hours)
+	# print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs, best_individual, work_hours)
 
 	## Generate a .csv file that can be imported into a google calendar ##
 
 	now = datetime.datetime.now()
 
 	# The name of the csv file to produce
-	oname = 'generated-on-%s_%s-jobs_schedule.ics' % (now.strftime("%d-%m-%y"), n_jobs) 
+	oname = 'Schedule_%s_%s-jobs.ics' % (now.strftime("%d-%m-%y-%H:%M"), n_jobs) 
 
 	print('Creating a .ics file of this schedule for importing into google calendar.')
 
