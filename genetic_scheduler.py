@@ -571,8 +571,7 @@ def print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs
 	print('Final Schedule:')
 	title = ''
 	for j, job in enumerate(jobs):
-		print(job)
-		add = ('  %33s  |' % job['jobName'].center(33))
+		add = ('  %33s  |' % job['JobName'].center(33))
 		title += add
 	print('                        |  Night time?  |%s' % title)
 
@@ -964,7 +963,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 			# Construct the csv entry
 			# Subject: '<Job Name>, <Experiment Name>'
 			# Description: '<Task Name'>
-			subject     = '"%s - %s"' % (jobs[j]['jobName'], jobs[j]['order'][exp_index])
+			subject     = '"%s - %s"' % (jobs[j]['JobName'], jobs[j]['order'][exp_index])
 			description = '%s - Active? %r' % (task['name'], bool(task['active']))
 
 			# Some calendars (e.g. Outlook) require a globally unique UID. I'll use <JobGen_[start_time]-[end_time]@[device_name]>
