@@ -1,0 +1,32 @@
+{
+    "Rice": [
+        {
+            "active": true, 
+            "flexible": false, 
+            "name": "Find Rice", 
+            "time": 10
+        }, 
+        {
+            "active": true, 
+            "flexible": false, 
+            "name": "Bring rice home", 
+            "time": 15
+        }, 
+        {
+            "active": true, 
+            "flexible": false, 
+            "name": "Measure rice and water", 
+            "time": 5
+        }, 
+        {
+            "active": false, 
+            "flexible": false, 
+            "name": "Cook Rice", 
+            "time": 25
+        }
+    ], 
+    "order": [
+        "Rice"
+    ], 
+    "JobName": "Tasty"
+}

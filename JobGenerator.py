@@ -165,7 +165,7 @@ class Container(GridLayout):
         f = open(fname, 'w')
         print >> f, j
         f.close()
-
+        
     def remove_task(self, exp_name, task_index):
         self.job[exp_name][task_index]['active'] = (not self.job[exp_name][task_index]['active'])
         self.update_report()

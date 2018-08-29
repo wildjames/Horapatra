@@ -1,0 +1,38 @@
+{
+    "jdsal": [
+        {
+            "active": true, 
+            "flexible": false, 
+            "name": "fdskj", 
+            "time": 123
+        }, 
+        {
+            "active": false, 
+            "flexible": false, 
+            "name": "fdskj", 
+            "time": 123
+        }, 
+        {
+            "active": true, 
+            "flexible": false, 
+            "name": "fdskj", 
+            "time": 123
+        }, 
+        {
+            "active": false, 
+            "flexible": false, 
+            "name": "fdskj", 
+            "time": 123
+        }, 
+        {
+            "active": true, 
+            "flexible": false, 
+            "name": "fdskj", 
+            "time": 123
+        }
+    ], 
+    "order": [
+        "jdsal"
+    ], 
+    "JobName": "Test"
+}

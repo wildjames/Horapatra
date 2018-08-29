@@ -507,14 +507,16 @@ def breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, coho
 
 		# Dad is a random father from the upper 50%
 		dad = rand.randint(0, len(cohort)/2)
-		# ensure they're different
-		while dad == mum:
-			dad = rand.randint(0, len(cohort)/2)
 		dad = cohort[dad]
+		# ensure they're different
+		# while dad == mum:
+		# 	dad = rand.randint(0, len(cohort))
+		# 	dad = cohort[dad]
 
 		y = 0
 		which_parent = 0
 		while len(new_individual) < n_tasks:
+			print('Breeding...')
 			# Choose a random integer between a fifth and a third of a chromosome to swap genes for
 			n_swap = rand.randint(n_tasks/5,n_tasks/3)
 			# Check we have enough genes left to do this
@@ -847,8 +849,16 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 			# Evaluate the individual
 			
 			t0 = time.time()
+
 			job_schedules, skipped_tasks = generate_schedule(
-				initial_date, existing_jobs, jobs, permutation, workday_start, workday_end, debug, work_hours=work_hours)
+				initial_date, 
+				existing_jobs, jobs, 
+				permutation, 
+				workday_start, workday_end, 
+				debug, 
+				work_hours=work_hours
+				)
+
 			times.append(time.time()-t0)
 			perm_index = 0
 
@@ -862,12 +872,11 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 				if debug:
 					print('The workday is now %d hours long' % work_hours)
 
-		while None in cohort_results:
+		while None in cohort_results and len(cohort_results)!=0:
 			print('This individual had to skip some tasks. Killing the weak.')
 			index = cohort_results.index(None)
 			del cohort[index]
 			del cohort_results[index]
-
 
 		if len(cohort) <= 1:
 			print("'I couldn't find a solution to this set of jobs.")
@@ -876,10 +885,17 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 			permutation = []
 			for j in range(n_tasks):
 				permutation.append(rand.randint(0, n_jobs-1))
-			schedule, job_schedules, skipped_tasks = generate_schedule(
-				initial_date, existing_jobs, jobs, permutation, workday_start, workday_end, debug, work_hours=work_hours)
+
+			job_schedules, skipped_tasks = generate_schedule(
+				initial_date, 
+				existing_jobs, jobs, 
+				permutation, 
+				workday_start, workday_end, 
+				debug, 
+				work_hours=work_hours
+				)
 			
-			break
+			cont = False
 
 		# Save the best individual, std, and best score for each generation
 		best_scores.append(min(cohort_results))
@@ -927,7 +943,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	now = datetime.datetime.now()
 
 	# The name of the csv file to produce
-	oname = 'Schedule_%s_%s-jobs.ics' % (now.strftime("%d-%m-%y-%H:%M"), n_jobs) 
+	oname = 'Schedule_%s_%s-jobs.ics' % (now.strftime("%d-%m-%y-%Hh%Mm"), n_jobs) 
 
 	print('Creating a .ics file of this schedule for importing into google calendar.')
 

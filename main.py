@@ -24,6 +24,7 @@ from datetime import date, timedelta
 import datetime
 from functools import partial
 import threading
+import StringIO
 
 # System libraries
 import sys
@@ -106,6 +107,9 @@ class PrimaryWindow(GridLayout):
 
         # Get the existing jobs
         self.json_path = 'Jobs/'
+        if not os.path.isdir(self.json_path):
+            os.makedirs(self.json_path)
+        
         self.update_dropdown()
 
         # Some stuff for the scheduler part
@@ -316,13 +320,6 @@ class PrimaryWindow(GridLayout):
             print('Empty Job List!')
             return
 
-        # print('Using the following arguments to generate a schedule:')
-        # print('Genetic: %s' % (self.ids.GeneticButton.state=='down'))
-        # print('Jobs:')
-        # for job in self.jobList:
-        #     print('- %s' % job)
-        # print('')
-
         # Construct the arguments in the right format to pass to the scheduler
         fnames = [self.json_path+x for x in self.jobList]
         initial_date = datetime.datetime.combine(self.date, datetime.datetime.min.time())
@@ -339,7 +336,25 @@ class PrimaryWindow(GridLayout):
             target=sched.run_scheduler, args=(fnames, self.dest, initial_date, self.existing)
             )
         self.thread.daemon = True
+
+        self.popup = Popup(title='Scheduler',
+            content=Label(text='Working...'),
+            size_hint=(0.7, 0.7)
+            )
+        
+        
+        self.popup.open()
         self.thread.start()
+
+        self.check_genetics = Clock.schedule_interval(self.check_thread, 1)
+        
+    def check_thread(self, *args, **kwargs):
+        if self.thread.is_alive():
+            self.popup.content = Label(text='Still Working...')
+        else:
+            self.popup.content = Label(text='Schedule Complete!')
+
+            self.check_genetics.cancel()
 
 class SchedulerApp(App):
 
