@@ -440,7 +440,6 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 				
 				# Do that
 				for j, task_ID in enumerate(task_schedule):
-					# schedule[i+j].append(task_schedule[j][0])
 					# Generate the indexes from the task ID
 					job_index, exp_index, tas_index = parse_ID(task_ID)
 					job_schedules[job_index][i+j] = task_ID
@@ -458,8 +457,10 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 			next_task_ID = incriment_ID(existing_jobs, jobs, starter_ID)
 		else:
 			next_task_ID = ID
+		
 		if debug > 1:
 			print('The next task ID after %s is %s' % (starter_ID, next_task_ID))
+		
 		current_tasks = [next_task_ID if y==starter_ID else y for y in current_tasks]
 
 		if debug > 1:
@@ -467,21 +468,13 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 			print(current_tasks)
 
 
-	# Remove trailing whilespace
-	slot = ['' for job in job_schedules]
-	active = check_active_slot(existing_jobs, jobs, slot)
-	
-	while not active:
-		for i, j in enumerate(job_schedules):
-			job_schedules[i] = job_schedules[i][:-1]
-		try:
-			slot = [j[-1] for n,j in enumerate(job_schedules)]
-			if '999999' in slot:
-				slot.remove('999999')
-
-			active = check_active_slot(existing_jobs, jobs, slot)
-		except:
-			break
+	# # Remove trailing whilespace -- Very expensive
+	# slot = ['' for job in job_schedules[:-1]]
+	# cur_slot = []
+	# while cur_slot==slot:
+	# 	cur_slot = [ j[-1] for n,j in enumerate(job_schedules[:-1]) ]
+	# 	for i, j in enumerate(job_schedules):
+	# 		job_schedules[i] = job_schedules[i][:-1]
 
 	return job_schedules, skipped_tasks
 
@@ -516,9 +509,8 @@ def breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, coho
 		y = 0
 		which_parent = 0
 		while len(new_individual) < n_tasks:
-			print('Breeding...')
 			# Choose a random integer between a fifth and a third of a chromosome to swap genes for
-			n_swap = rand.randint(n_tasks/5,n_tasks/3)
+			n_swap = rand.randint(0,n_tasks)
 			# Check we have enough genes left to do this
 			if y + n_swap >= n_tasks:
 				n_swap = n_tasks - y
@@ -745,7 +737,7 @@ def parse_csv_event(line, initial_date):
 
 def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=None):
 	# Print out debugging info?
-	debug = 1
+	debug = 0
 
 	# print(datetime.datetime.strftime(initial_date, '%m/%d/%Y %H:%M'))
 	initial_date = initial_date.replace(tzinfo=pytz.timezone('Europe/London'))
@@ -935,7 +927,16 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 
 	best_individual = best_individuals[best_scores.index(min(best_scores))]
 	print('The best individual was %s' % ''.join([str(x) for x in best_individual]))
-
+	
+	job_schedules, skipped_tasks = generate_schedule(
+		initial_date, 
+		existing_jobs, jobs, 
+		best_individual, 
+		workday_start, workday_end, 
+		0, 
+		work_hours=work_hours
+		)
+		
 	# print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs, best_individual, work_hours)
 
 	## Generate a .csv file that can be imported into a google calendar ##
@@ -965,8 +966,13 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 		task_ID = filter(None, schedule)[0]
 		while task_ID:
 			# Get the first and last slots of this task
-			start_slot = schedule.index(task_ID)
-			end_slot   = len(schedule) - schedule[::-1].index(task_ID)
+			try:
+				start_slot = schedule.index(task_ID)
+				end_slot   = len(schedule) - schedule[::-1].index(task_ID)
+			except:
+				print('Failed to find %s' % task_ID)
+				print(schedule)
+				exit()
 
 			# retrieve the task data
 			task = get_task(existing_jobs, jobs, task_ID)
@@ -1003,6 +1009,8 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	f = open(oname, 'wb')
 	f.write(cal.to_ical())
 	f.close()
+
+	return oname
 
 	### .CSV LEGACY CODE. DISUSED.
 	# f = open(oname, 'w')
