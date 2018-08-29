@@ -571,6 +571,7 @@ def print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs
 	print('Final Schedule:')
 	title = ''
 	for j, job in enumerate(jobs):
+		print(job)
 		add = ('  %33s  |' % job['jobName'].center(33))
 		title += add
 	print('                        |  Night time?  |%s' % title)
