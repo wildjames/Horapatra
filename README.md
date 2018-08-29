@@ -7,6 +7,8 @@ The name is a portmanteau of two historical figures - Cleopatra (not the queen) 
 
 The other component is from the Horae, the greek gods of the passage of time, from which we get the word "hours". 
 
+If you find a bug, please let me know! [Email](wild.james343@gmail.com)
+
 ## Installation
 First, install requirements
 
