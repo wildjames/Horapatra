@@ -10,6 +10,8 @@ The other component is from the Horae, the greek gods of the passage of time, fr
 If you find a bug, please let me know! [Email](wild.james343@gmail.com)
 
 ## Installation
+Before anything else, hit the green button on the right of the files table. Download the .zip and extract it to wherever you like.
+
 First, install requirements
 
 `pip install --user --upgrade kivy icalendar numpy pytz`
