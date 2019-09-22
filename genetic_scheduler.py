@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 '''
@@ -28,11 +28,13 @@ def get_5_min_time(hh, mm=0):
 	'''takes hours and minutes, and converts it to the proper index for the schedule. Rounds mm DOWN to the nearest 5'''
 	# an hour in minutes
 	hh = int(float(hh)*60)
-	
+
 	mm = int(mm)
 
 	# Make sure it's an int, so it rounds down to the nearest slot
-	return int(hh+mm)/5
+	t = int(hh+mm)/5
+	t = int(t)
+	return t
 
 def read_job_file(fname):
 	'''Read in a job JSON file, and scrub the input so we dont have to worry about it later'''
@@ -40,9 +42,9 @@ def read_job_file(fname):
 			job = json.load(f)
 
 	# I need to add an ID string to each task. The Job ID can be passed to the function, defaults to '00'.
-	# The experiments are ordered in their list, so the ID can be taken as their place in that list. 
+	# The experiments are ordered in their list, so the ID can be taken as their place in that list.
 	# Tasks are again ordered, so can be taken from there too.
-	# Hence, I only need to define a /job/ ID, and the others are implicitly tagged. 
+	# Hence, I only need to define a /job/ ID, and the others are implicitly tagged.
 	# Store jobs in an ordered list to give them their ID in the same way as experiments and tasks
 	for exp_name in job['order']:
 		for task in job[exp_name]:
@@ -84,11 +86,11 @@ def get_experiment(jobs, ID):
 	return experiment
 
 def get_task(existing_jobs, jobs, ID):
-	'''Gets the appropriate task dict, defined by the given ID string. 
+	'''Gets the appropriate task dict, defined by the given ID string.
 	ID string in the format 'XXYYZZ'
 	XX - Job index in [jobs]
 	YY - Experiment index in job['order']
-	ZZ - Task index in job[experiment] 
+	ZZ - Task index in job[experiment]
 
 	Also, if the ID is 999999, it is night time.
 	'''
@@ -137,15 +139,15 @@ def get_task(existing_jobs, jobs, ID):
 	return task
 
 def incriment_ID(existing_jobs, jobs, ID):
-	'''Tries to incriment to the next task in the experiment. 
-	Failing that, incriments to the next experiment in the job. 
+	'''Tries to incriment to the next task in the experiment.
+	Failing that, incriments to the next experiment in the job.
 	Failing that, returns None'''
-	
+
 	if ID == None:
 		return None
 
 	new_ID = list(ID)
-	
+
 	job_index = int(''.join(new_ID[:2]))
 	exp_index = int(''.join(new_ID[2:4]))
 	tas_index = int(''.join(new_ID[4:]))
@@ -166,10 +168,10 @@ def incriment_ID(existing_jobs, jobs, ID):
 		# print('Second conditional entered')
 		tas_index = 0
 		exp_index += 1
-	
+
 	new_ID = str(job_index).rjust(2, '0')
 	new_ID+= str(exp_index).rjust(2, '0')
-	new_ID+= str(tas_index).rjust(2, '0')					
+	new_ID+= str(tas_index).rjust(2, '0')
 
 	if new_ID == ID:
 		new_ID = None
@@ -182,10 +184,10 @@ def incriment_ID(existing_jobs, jobs, ID):
 		return None
 
 def decriment_ID(jobs, ID):
-	'''Tries to decriment to the previous task in the experiment. 
+	'''Tries to decriment to the previous task in the experiment.
 	If the first task in the experiment, goes to the last task in the previous one.
 	If the first experiment in the job, returns None.'''
-	
+
 	new_ID = list(ID)
 
 	job_index = int(''.join(new_ID[:2]))
@@ -253,7 +255,7 @@ def initialise_day(jobs, work_hours, workday_start, workday_end, existing_jobs, 
 
 	# Schedule array. index 0 is the first time slot of the day, and lasts the number of work hours.
 	work_hours = get_5_min_time(work_hours)
-	
+
 	# This will contain only the schedules for the appropriate jobs.
 	n_jobs = len(jobs) + 1
 	job_schedules = [['' for i in range(work_hours)] for job in range(n_jobs)]
@@ -297,7 +299,10 @@ def initialise_day(jobs, work_hours, workday_start, workday_end, existing_jobs, 
 
 	return job_schedules
 
-def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_start, workday_end, debug=0, work_hours=7*24):
+def generate_schedule(
+	initial_date, existing_jobs, jobs, permutation,
+	workday_start, workday_end, debug=1, work_hours=7*24
+	):
 	'''Generates a schedule from a given permutation.
 	returns:
 	schedule, job_schedules, skipped_tasks'''
@@ -323,10 +328,10 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 		starter_ID = ''
 		# Start with the longest experiment?
 		# !!! Or the one with the highest score !!! ##### -- TODO -- ######
-		
+
 		# Start off with the ideal next task ID
 		next_task_ID = current_tasks[permutation[perm_index]]
-		
+
 		if debug > 1:
 			print('\n\n--------------------------------------------\nConsidering the following tasks for the next thing:')
 			print('Checking permutation %s' % ''.join([str(x) for x in permutation]))
@@ -334,7 +339,7 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 				job_index, exp_index, tas_index = parse_ID(ID)
 				task = get_task(existing_jobs, jobs, ID)
 
-				print('ID: %s\n- Job:       %s\n- Task Name: %s' % 
+				print('ID: %s\n- Job:       %s\n- Task Name: %s' %
 					(ID, jobs[job_index]['order'][exp_index], task['name']))
 			print('Preferring the next task in job %d' % permutation[perm_index])
 
@@ -382,16 +387,16 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 			job_index, exp_index, tas_index = parse_ID(next_task_ID)
 			experiment_name = jobs[job_index]['order'][exp_index]
 			experiment = jobs[job_index][experiment_name]
-			
+
 			if debug > 2:
 				print('Task %s is inflexible. Constructing a pseudo-task of this experiment...' % next_task_ID)
-			
+
 			ID = next_task_ID
-			
+
 			for task in experiment:
 				task_schedule += [ID for i in range(task['time'])]
 				ID = incriment_ID(existing_jobs, jobs, ID)
-		
+
 		if debug > 2:
 			for i, task_ID in enumerate(task_schedule):
 				print('Slot: %3d - ID: %s' % (i, task_ID))
@@ -408,7 +413,7 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 		if prev_ID != None:
 			# Start at the end and work forwards
 			last_loc = n_slots
-			
+
 			while last_loc > 0:
 				last_loc -= 1
 				slot = [m[last_loc] for n,m in enumerate(job_schedules)]
@@ -417,7 +422,7 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 
 		if debug > 2:
 			print('The last task before %s, %s, was in location %d' % (starter_ID, prev_ID, last_loc))
-		
+
 		flag = 1
 		for i in range(last_loc+1, n_slots-len(task_schedule)):
 			flag = 0
@@ -437,7 +442,7 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 			if not flag:
 				if debug > 1:
 					print('Success! Pushing the task schedule into main schedule, starting from slot %d' % i)
-				
+
 				# Do that
 				for j, task_ID in enumerate(task_schedule):
 					# Generate the indexes from the task ID
@@ -445,10 +450,10 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 					job_schedules[job_index][i+j] = task_ID
 				# Don't check any more slots.
 				break
-				
+
 		# If we see the flag, that means we checked the entire schedule and couldn't fit it in.
 		if flag == 1:
-			# print("Sorry! I couldn't fit in the task %s. I'll skip it, " % 
+			# print("Sorry! I couldn't fit in the task %s. I'll skip it, " %
 			# 	starter_ID)
 			skipped_tasks.append(starter_ID)
 
@@ -457,10 +462,10 @@ def generate_schedule(initial_date, existing_jobs, jobs, permutation, workday_st
 			next_task_ID = incriment_ID(existing_jobs, jobs, starter_ID)
 		else:
 			next_task_ID = ID
-		
+
 		if debug > 1:
 			print('The next task ID after %s is %s' % (starter_ID, next_task_ID))
-		
+
 		current_tasks = [next_task_ID if y==starter_ID else y for y in current_tasks]
 
 		if debug > 1:
@@ -489,7 +494,7 @@ def breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, coho
 	i = False
 	j = 0
 	mum = cohort[j]
-	
+
 	for j in range(len(cohort)//2):
 		new_individual = []
 
@@ -499,7 +504,7 @@ def breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, coho
 		i = not i
 
 		# Dad is a random father from the upper 50%
-		dad = rand.randint(0, len(cohort)/2)
+		dad = rand.randint(0, int(len(cohort)/2))
 		dad = cohort[dad]
 		# ensure they're different
 		# while dad == mum:
@@ -516,7 +521,7 @@ def breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, coho
 				n_swap = n_tasks - y
 
 			# print('New chromosome is now %s' % ''.join( [str(c) for c in new_individual] ))
-			
+
 			which_parent = (not which_parent)
 			if which_parent:
 				new_individual[y:y+n_swap] = mum[y:y+n_swap]
@@ -531,28 +536,28 @@ def breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, coho
 				# print('Mutation! Changing value %s' % new_individual[i])
 				new_individual[i] = rand.randint(0, n_jobs-1)
 				# print('to %s' % new_individual[i])
-		
+
 		if debug > 2:
 			print('breeding %s and %s' % (''.join([str(c) for c in mum]), ''.join([str(c) for c in dad])))
 			print('%s was born' % ''.join([str(c) for c in new_individual]))
 			print(len(new_individual))
 
 		new_cohort.append(new_individual)
-	
+
 	while len(new_cohort) < len(cohort):
 		# Randomly generate new offspring a la abiogenesis
 		new_individual = []
 		for j in range(n_tasks):
 			new_individual.append(rand.randint(0, n_jobs-1))
 		new_cohort.append(new_individual)
-	
+
 	return new_cohort
 
 def print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs, individual, work_hours):
 	# Get the schedule from the chromosome
 	job_schedules, skipped_tasks = generate_schedule(
-		initial_date, existing_jobs, jobs, individual, workday_start, workday_end, 0, work_hours=work_hours)	
-	
+		initial_date, existing_jobs, jobs, individual, workday_start, workday_end, 0, work_hours=work_hours)
+
 	# I need this later
 	day_length = get_5_min_time(24,00)
 	n_jobs = len(jobs)
@@ -596,7 +601,7 @@ def print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs
 				night = 'Multiples'
 			if night != '':
 				break
-			
+
 
 		if active == 1:
 			active = 'ACTIVE'
@@ -679,13 +684,13 @@ def parse_ical_event(event, initial_date):
 
 	# If the last word in the description is 'False,', then this is an inactive task. Otherwise, it's active.
 	active = event['DESCRIPTION'].split(' ')[-1].lower() != 'false'
-	
+
 	# Get the first slot equivalent of this event
 	# Detect and fix datetime.date objects
 	if (type(start)) == datetime.date:
 		start = datetime.datetime.combine(start, datetime.datetime.min.time())
 		start = start.replace(tzinfo=pytz.timezone('Europe/London'))
-		
+
 	first_slot = start - initial_date
 	first_slot = int(first_slot.total_seconds()//(5*60))
 
@@ -701,13 +706,13 @@ def parse_ical_event(event, initial_date):
 def parse_csv_event(line, initial_date):
 	# Split into columns
 	line = line.split(',')
-	
+
 	# Get the event name
 	name = line[0]
 
 	# If the last word in the description is 'False,', then this is an inactive task
 	active = line[6].split(' ')[-1].lower() != 'false'
-	
+
 	# Get the start and end time/dates
 	start_date, start_time, end_date, end_time = line[1:5]
 
@@ -737,7 +742,7 @@ def parse_csv_event(line, initial_date):
 
 def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=None):
 	# Print out debugging info?
-	debug = 0
+	debug = 10
 
 	# print(datetime.datetime.strftime(initial_date, '%m/%d/%Y %H:%M'))
 	initial_date = initial_date.replace(tzinfo=pytz.timezone('Europe/London'))
@@ -836,18 +841,18 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 		n += 1
 
 		times = []
-		# Consider each individual in the cohort 
-		for x, permutation in enumerate(cohort):			
+		# Consider each individual in the cohort
+		for x, permutation in enumerate(cohort):
 			# Evaluate the individual
-			
+
 			t0 = time.time()
 
 			job_schedules, skipped_tasks = generate_schedule(
-				initial_date, 
-				existing_jobs, jobs, 
-				permutation, 
-				workday_start, workday_end, 
-				debug, 
+				initial_date,
+				existing_jobs, jobs,
+				permutation,
+				workday_start, workday_end,
+				debug,
 				work_hours=work_hours
 				)
 
@@ -879,14 +884,14 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 				permutation.append(rand.randint(0, n_jobs-1))
 
 			job_schedules, skipped_tasks = generate_schedule(
-				initial_date, 
-				existing_jobs, jobs, 
-				permutation, 
-				workday_start, workday_end, 
-				debug, 
+				initial_date,
+				existing_jobs, jobs,
+				permutation,
+				workday_start, workday_end,
+				debug,
 				work_hours=work_hours
 				)
-			
+
 			cont = False
 
 		# Save the best individual, std, and best score for each generation
@@ -894,7 +899,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 		best_individuals.append(cohort[cohort_results.index(best_scores[-1])])
 		std = np.std(cohort_results[:int(2*len(cohort_results)/3)])
 		deviations.append(std)
-		
+
 		# breed cohort - score is the number of slots it needs.
 		## Sort by ascending score
 		cohort_results, cohort = (list(t) for t in zip(*sorted(zip(cohort_results, cohort))))
@@ -903,7 +908,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 			for individual, result in zip(cohort, cohort_results):
 				print('%s - %d' % (''.join([str(x) for x in individual]), result))
 			print('This cohort took an average of %lfs to generate.' % np.mean(times))
-		
+
 		# If the standard deviation of the cohort is less than 20%, we are converged
 		print('      %3d   - %4d - %9.2lf - %.2lf' % (n, min(cohort_results), std, std/min(cohort_results)))
 
@@ -922,21 +927,21 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 
 		cohort = breed(n_jobs, mutation_rate, threshold, n_individuals, n_tasks, cohort, cohort_results)
 		cohort_results = [0 for x in cohort]
-		
+
 	#### Done! ####
 
 	best_individual = best_individuals[best_scores.index(min(best_scores))]
 	print('The best individual was %s' % ''.join([str(x) for x in best_individual]))
-	
+
 	job_schedules, skipped_tasks = generate_schedule(
-		initial_date, 
-		existing_jobs, jobs, 
-		best_individual, 
-		workday_start, workday_end, 
-		0, 
+		initial_date,
+		existing_jobs, jobs,
+		best_individual,
+		workday_start, workday_end,
+		0,
 		work_hours=work_hours
 		)
-		
+
 	# print_schedule(initial_date, existing_jobs, workday_start, workday_end, jobs, best_individual, work_hours)
 
 	## Generate a .csv file that can be imported into a google calendar ##
@@ -944,11 +949,11 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	now = datetime.datetime.now()
 
 	# The name of the csv file to produce
-	oname = 'Schedule_%s_%s-jobs.ics' % (now.strftime("%d-%m-%y-%Hh%Mm"), n_jobs) 
+	oname = 'Schedule_%s_%s-jobs.ics' % (now.strftime("%d-%m-%y-%Hh%Mm"), n_jobs)
 
 	print('Creating a .ics file of this schedule for importing into google calendar.')
 
-	# Desktop 
+	# Desktop
 	desktop_loc = os.path.expanduser("~/Desktop") +'/'+ oname
 
 	if destination == '':
@@ -964,9 +969,15 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 
 	cal = Calendar()
 	cal.add('version', '2.0')
+	print("The winning job schedule was {}".format(job_schedules[:-1]))
 	for j, schedule in enumerate(job_schedules[:-1]):
 		# Get the first task in the schedule
-		task_ID = filter(None, schedule)[0]
+		tasks = ['']
+		for t in schedule:
+			if t not in tasks: tasks.append(t)
+		tasks = tasks[1:]
+		task_ID = tasks[0]
+		print("First task ID is '{}'".format(task_ID))
 		while task_ID:
 			# Get the first and last slots of this task
 			try:
@@ -1005,6 +1016,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 			event.add('uid', UID)
 
 			# Add it to the calendar
+			print("Event: {}".format(event))
 			cal.add_component(event)
 
 			task_ID = incriment_ID(existing_jobs, jobs, task_ID)
@@ -1021,7 +1033,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	### .CSV LEGACY CODE. DISUSED.
 	# f = open(oname, 'w')
 	# # This seems poorly documented. Use the following format:
-	# #        string , MM/DD/YYYY, 24H time  , MM/DD/YYYY, 24H   , bool         , string     , 
+	# #        string , MM/DD/YYYY, 24H time  , MM/DD/YYYY, 24H   , bool         , string     ,
 	# f.write('Subject, Start Date, Start Time, End Date, End Time, All Day Event, Description, Location, Private \n')
 
 	# # Subject: '<Job Name>, <Experiment Name>'
@@ -1032,14 +1044,14 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	# # These will be the date and time of the first slot, i.e. midnight of Sunday, leading into monday.
 	# if initial_date == None:
 	# 	initial_date = datetime.datetime(now.year, now.month, now.day, minute=0, hour=0)
-	# 	initial_date += datetime.timedelta(days=(7 - initial_date.weekday()))	
+	# 	initial_date += datetime.timedelta(days=(7 - initial_date.weekday()))
 
-	# # For each job, loop through the schedule and detect the start and end slots of each task. 
+	# # For each job, loop through the schedule and detect the start and end slots of each task.
 	# # Convert these slot indexes to times, and create a new entry in teh csv file for this event.
 	# for j, schedule in enumerate(job_schedules[:-1]):
-		
-	# 	task_ID = filter(None, schedule)[0] 
-		
+
+	# 	task_ID = filter(None, schedule)[0]
+
 	# 	while task_ID:
 	# 		# Get the first and last slots of this task
 	# 		start_slot = schedule.index(task_ID)
@@ -1063,7 +1075,7 @@ def run_scheduler(fnames, destination='./', initial_date=None, existing_tasks=No
 	# 		subject     = '"%s - %s"' % (jobs[j]['jobName'], jobs[j]['order'][exp_index])
 	# 		description = task['name']
 
-	# 		f.write('%s,%s,%s,%s,%s,,%s - Active? %r,,\n' % 
+	# 		f.write('%s,%s,%s,%s,%s,,%s - Active? %r,,\n' %
 	# 			(subject, start_date, start_time, end_date, end_time, description, bool(task['active']) )
 	# 			)
 

@@ -14,7 +14,7 @@ from kivy.uix.popup import Popup
 from kivy.graphics.instructions import Canvas
 from kivy.graphics.instructions import InstructionGroup
 
-from os import listdir 
+from os import listdir
 # kv_path = './kv/'
 # for kv in listdir(kv_path):
 #     print('Built %s' % (kv_path+kv))
@@ -43,7 +43,7 @@ class ExpButton(Button):
         for i in dir(self.parent.parent.parent):
             print(i)
         self.parent.parent.parent.remove_experiment(self.exp_name)
-        
+
 
 class NewExpTextInput(TextInput):
     pass
@@ -68,9 +68,9 @@ class ActiveLabel(Button):
 class Container(GridLayout):
     def __init__(self, **kwargs):
         super(Container, self).__init__(**kwargs)
-        
+
         self.labels = []
-        
+
         self.job = {'JobName': 'Default', 'order': []}
 
         self.exit_button = Button(text='Done', size_hint=(None, None), height=30, width=75)
@@ -82,9 +82,9 @@ class Container(GridLayout):
             )
 
     def update_report(self):
-        '''Construct a table of experiments. 
+        '''Construct a table of experiments.
         Rather than updating the table with every change, redraw the whole thing since it's cheap.'''
-        
+
         job = self.job
         order = job['order']
 
@@ -95,20 +95,20 @@ class Container(GridLayout):
 
         # Reinitialise the table
         self.Table = ReportTable()
-        
+
         # Repopulate the table
-        for exp_name in order:  
+        for exp_name in order:
             experiment = job[exp_name]
 
             # How long will this experiment take?
             exp_time = 0.0
             for task in experiment:
                 exp_time += float(task['time'])
-            
+
             # Create an experiment button
             self.btn = ExpButton(text=('%s - %d min' % (exp_name, exp_time)))
             self.btn.exp_name = exp_name
-            
+
             # Add it to the table
             self.Table.add_widget(self.btn)
 
@@ -117,14 +117,14 @@ class Container(GridLayout):
                     self.Table.add_widget(BlankRow())
 
                 self.Table.add_widget(  RowText(text=task['name'] ) )
-                
+
                 self.active_text = ActiveLabel(text=str(task['active']))
                 self.active_text.exp_name = exp_name
                 self.active_text.task_index = i
                 self.Table.add_widget(self.active_text)
-                
+
                 self.Table.add_widget(  RowText(text=str(task['flexible']) ) )
-                
+
                 self.Table.add_widget(  RowText(text=str(task['time']) ) )
 
         self.ids.ReportBox.add_widget(self.Table)
@@ -140,7 +140,7 @@ class Container(GridLayout):
     def update_flexible(self):
         '''When flexible is toggled, update the whole experiment.'''
         exp_name = self.ids.NewExpInput.text
-        
+
         try:
             for i, task in enumerate(self.job[exp_name]):
                 self.job[exp_name][i]['flexible'] = self.ids.Flex.state=='down'
@@ -160,16 +160,16 @@ class Container(GridLayout):
 
         # Get the filename
         self.job['JobName'] = self.ids.JobNameInput.text
-        
+
         j = json.dumps(self.job, indent = 4)
         fname = './Jobs/'+self.job['JobName'].replace(' ', '_') + '.json'
         f = open(fname, 'w')
-        print >> f, j
+        f.write(j)
         f.close()
 
         self.popup = Popup(title='', content=Label(text="Done!"), size_hint=(.3, .3))
         self.popup.open()
-        
+
     def remove_task(self, exp_name, task_index):
         self.job[exp_name][task_index]['active'] = (not self.job[exp_name][task_index]['active'])
         self.update_report()
@@ -204,7 +204,7 @@ class Container(GridLayout):
             return
 
         # If we are ok, construct the task
-        task = {'name': name, 
+        task = {'name': name,
                 'time': duration,
                 'active': active=='down',
                 'flexible': self.ids.Flex.state=='down'

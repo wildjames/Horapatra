@@ -1,38 +1,29 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# Modules kivy needs
-from kivy.config import Config
-from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.properties import ObjectProperty
-from kivy.uix.button import Button
-from kivy.uix.textinput import TextInput
-from kivy.uix.label import Label
-from kivy.lang import Builder
-from kivy.graphics.instructions import Canvas
-from kivy.graphics.instructions import InstructionGroup
-from kivy.uix.dropdown import DropDown
-from kivy.clock import Clock
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.popup import Popup
-from kivy.uix.scrollview import ScrollView
-
-# Modules I need
-import json
-from datetime import date, timedelta
 import datetime
-from functools import partial
+import json
+import os
+import sys
 import threading
 import webbrowser
+from datetime import date, timedelta
+from functools import partial
 
-# System libraries
-import sys
-import os
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.config import Config
+from kivy.graphics.instructions import Canvas, InstructionGroup
+from kivy.lang import Builder
+from kivy.properties import ObjectProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.button import Button
+from kivy.uix.dropdown import DropDown
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
+from kivy.uix.scrollview import ScrollView
+from kivy.uix.textinput import TextInput
 
-# My libraries
-import genetic_scheduler as sched
 import datepicker
+import genetic_scheduler as sched
 import JobGenerator
 
 kv_path = './kv/'
@@ -82,7 +73,7 @@ class ExistingEventPicker(BoxLayout):
     def load(self, path, selection):
         if selection != []:
             app.root.existing = os.path.join(path, selection[0])
-            
+
             if '/' in selection[0]:
                 file = selection[0].split('/')[-1]
             elif '\\' in selection[0]:
@@ -99,8 +90,6 @@ class ExistingEventPicker(BoxLayout):
 class PrimaryWindow(GridLayout):
     def __init__(self, **kwargs):
         super(PrimaryWindow, self).__init__(**kwargs)
-        
-        # Set the minimum window width?
 
         # Get the dropdown box ready
         self.dropdown = CustomDropDown()
@@ -119,13 +108,18 @@ class PrimaryWindow(GridLayout):
         self.existing = ''
         self.ids.ExistingFile.text = self.existing
 
-        # Track the jobs we want to optimise, and initialise the table that reports what we have so far
+        # Track the jobs we want to optimise,
+        # and initialise the table that reports what we have so far
         self.jobList = []
 
         # Initialise the start date of the schedule as the next monday from today
         now = datetime.datetime.now()
-        initial_date = datetime.datetime(now.year, now.month, now.day, minute=0, hour=0)
-        initial_date += datetime.timedelta(days=(7 - initial_date.weekday()))
+        initial_date = datetime.datetime(
+            now.year, now.month, now.day, minute=0, hour=0
+        )
+        initial_date += datetime.timedelta(
+            days=(7 - initial_date.weekday())
+        )
         # and set the label to its value
         self.date = initial_date
         self.date_string = self.date.strftime("%a, %Y-%m-%d")
@@ -142,12 +136,12 @@ class PrimaryWindow(GridLayout):
     def update_dropdown(self, *args):
         # Instantiate the dropdown menu for job JSONs in our folder
         self.dropdown.clear_widgets()
-        
+
         fnames = []
-        
-        for file in os.listdir(self.json_path):
-            if '.json' in file:
-                fnames.append(file[:-5])
+
+        for fname in os.listdir(self.json_path):
+            if fname.endswith('.json'):
+                fnames.append(fname[:-5])
 
         fnames.sort()
 
@@ -161,11 +155,15 @@ class PrimaryWindow(GridLayout):
         '''Read in a job JSON file, and scrub the input so we dont have to worry about it later'''
         with open(fname) as f:
                 job = json.load(f)
-        # I need to add an ID string to each task. The Job ID can be passed to the function, defaults to '00'.
-        # The experiments are ordered in their list, so the ID can be taken as their place in that list. 
+        # I need to add an ID string to each task. The Job ID can be passed
+        # to the function, defaults to '00'.
+        # The experiments are ordered in their list, so the ID can be
+        # taken as their place in that list.
         # Tasks are again ordered, so can be taken from there too.
-        # Hence, I only need to define a /job/ ID, and the others are implicitly tagged. 
-        # Store jobs in an ordered list to give them their ID in the same way as experiments and tasks
+        # Hence, I only need to define a /job/ ID, and the others are
+        # implicitly tagged.
+        # Store jobs in an ordered list to give them their ID in the
+        # same way as experiments and tasks
         for exp_name in job['order']:
             for task in job[exp_name]:
                 task['name']     = str(task['name'])
@@ -214,11 +212,11 @@ class PrimaryWindow(GridLayout):
             for i, exp_name in enumerate(job_data['order']):
                 exp_length = self.get_exp_time(job_data, exp_name)
                 exp_length = '%dh:%dm' % (int(exp_length)//60, int(exp_length)%60)
-                
+
                 # Fill in the job column as blank
                 if i:
                     self.JobsTable.add_widget(BlankRow())
-                
+
                 # self.JobsTable.add_widget(RowText(text=exp_name, size_hint_x=1.5))
                 self.ExpButton = ExperimentButton(text=exp_name, size_hint_x=1.5)
                 self.ExpButton.job_name = job
@@ -227,7 +225,7 @@ class PrimaryWindow(GridLayout):
 
                 self.JobsTable.add_widget(RowText(text=exp_length, size_hint_x=0.5))
             j += 1
-        
+
         # Push to the visible window
         self.ids.JobReportBox.add_widget(self.JobsTable)
 
@@ -243,16 +241,16 @@ class PrimaryWindow(GridLayout):
 
         # Reinitialise the table
         self.ExperimentPreview = ReportTable()
-        
+
         # Repopulate the table
-        for exp_name in order:  
+        for exp_name in order:
             experiment = job[exp_name]
 
             # How long will this experiment take?
             exp_time = 0.0
             for task in experiment:
                 exp_time += float(task['time'])
-            
+
             # Create an experiment button, and add it to the table
             self.ExperimentPreview.add_widget(
                 Label(
@@ -263,13 +261,18 @@ class PrimaryWindow(GridLayout):
                 if i > 0:
                     self.ExperimentPreview.add_widget(BlankRow())
 
-                self.ExperimentPreview.add_widget(  RowText(text=task['name'] ) )
-                
-                self.ExperimentPreview.add_widget(  RowText(text='%r' % bool(task['active']) ) )
-                
-                self.ExperimentPreview.add_widget(  RowText(text='%r' % bool(task['flexible']) ) )
-                
-                self.ExperimentPreview.add_widget(  RowText(text=str(task['time']) ) )
+                self.ExperimentPreview.add_widget(
+                    RowText(text=task['name'])
+                )
+                self.ExperimentPreview.add_widget(
+                    RowText(text='%r' % bool(task['active']))
+                )
+                self.ExperimentPreview.add_widget(
+                    RowText(text='%r' % bool(task['flexible']))
+                )
+                self.ExperimentPreview.add_widget(
+                    RowText(text=str(task['time']))
+                )
 
         content = ScrollView(size_hint_y=1)
         content.add_widget(self.ExperimentPreview)
@@ -291,7 +294,7 @@ class PrimaryWindow(GridLayout):
     def select_date(self):
         self.popup = Popup(title='Select a start date for the schedule',
             content=datepicker.DatePicker(),
-            size_hint=(None, None), 
+            size_hint=(None, None),
             size=(400, 400)
             )
 
@@ -339,14 +342,15 @@ class PrimaryWindow(GridLayout):
 
         try:
             if self.thread.is_alive():
-                print("I'm already optimising a schedule! If you REALLY need to kill it, close the main app window.")
+                print("I'm already optimising a schedule!")
                 return
         except:
             pass
 
         self.thread = threading.Thread(
-            target=sched.run_scheduler, args=(fnames, self.dest, initial_date, self.existing)
-            )
+            target=sched.run_scheduler,
+            args=(fnames, self.dest, initial_date, self.existing)
+        )
         self.thread.daemon = True
 
         self.thread.start()
@@ -367,7 +371,6 @@ class PrimaryWindow(GridLayout):
 
 
 class SchedulerApp(App):
-
     def build(self):
         self.title = 'Big Booty Bitches'
         return PrimaryWindow()

@@ -23,27 +23,33 @@ class DatePicker(BoxLayout):
         super(DatePicker, self).__init__(**kwargs)
         self.date = date.today()
         self.orientation = "vertical"
-        self.month_names = ('January',
-                            'February', 
-                            'March', 
-                            'April', 
-                            'May', 
-                            'June', 
-                            'July', 
-                            'August', 
-                            'September', 
-                            'October',
-                            'November',
-                            'December')
-        if kwargs.has_key("month_names"):
+        self.month_names = (
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December'
+        )
+        if hasattr(kwargs, "month_names"):
             self.month_names = kwargs['month_names']
-        self.header = BoxLayout(orientation = 'horizontal', 
-                                size_hint = (1, 0.2))
+        self.header = BoxLayout(
+            orientation = 'horizontal',
+            size_hint = (1, 0.2)
+        )
         self.body = GridLayout(cols = 7)
         self.add_widget(self.header)
         self.add_widget(self.body)
 
-        self.exit_button = Button(text='Done', size_hint=(None, None), height=30, width=75)
+        self.exit_button = Button(
+            text='Done', size_hint=(None, None), height=30, width=75
+        )
         self.add_widget(self.exit_button)
 
         self.populate_body()
@@ -69,7 +75,7 @@ class DatePicker(BoxLayout):
             self.body.add_widget(Label(text=""))
         while date_cursor.month == self.date.month:
             date_label = Button(text = str(date_cursor.day))
-            date_label.bind(on_press=partial(self.set_date, 
+            date_label.bind(on_press=partial(self.set_date,
                                                   day=date_cursor.day))
             if self.date.day == date_cursor.day:
                 date_label.background_normal, date_label.background_down = date_label.background_down, date_label.background_normal

@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import json
@@ -18,7 +18,7 @@ def get_5_min_time(hh, mm=0):
 	'''takes hours and minutes, and converts it to the proper index for the schedule. Rounds mm DOWN to the nearest 5'''
 	# an hour in minutes
 	hh = int(float(hh)*60)
-	
+
 	mm = int(mm)
 
 	# Make sure it's an int, so it rounds down to the nearest slot
@@ -30,9 +30,9 @@ def read_job_file(fname):
 			job = json.load(f)
 
 	# I need to add an ID string to each task. The Job ID can be passed to the function, defaults to '00'.
-	# The experiments are ordered in their list, so the ID can be taken as their place in that list. 
+	# The experiments are ordered in their list, so the ID can be taken as their place in that list.
 	# Tasks are again ordered, so can be taken from there too.
-	# Hence, I only need to define a /job/ ID, and the others are implicitly tagged. 
+	# Hence, I only need to define a /job/ ID, and the others are implicitly tagged.
 	# Store jobs in an ordered list to give them their ID in the same way as experiments and tasks
 	for exp_name in job['order']:
 		for task in job[exp_name]:
@@ -76,11 +76,11 @@ def get_experiment(ID):
 
 
 def get_task(ID):
-	'''Gets the appropriate task dict, defined by the given ID string. 
+	'''Gets the appropriate task dict, defined by the given ID string.
 	ID string in the format 'XXYYZZ'
 	XX - Job index in [jobs]
 	YY - Experiment index in job['order']
-	ZZ - Task index in job[experiment] 
+	ZZ - Task index in job[experiment]
 
 	Also, if the ID is 999999, it is night time.
 	'''
@@ -114,8 +114,8 @@ def get_task(ID):
 	return task
 
 def incriment_ID(ID):
-	'''Tries to incriment to the next task in the experiment. 
-	Failing that, incriments to the next experiment in the job. 
+	'''Tries to incriment to the next task in the experiment.
+	Failing that, incriments to the next experiment in the job.
 	Failing that, returns None'''
 	global jobs
 
@@ -123,7 +123,7 @@ def incriment_ID(ID):
 		return None
 
 	new_ID = list(ID)
-	
+
 	job_index = int(''.join(new_ID[:2]))
 	exp_index = int(''.join(new_ID[2:4]))
 	tas_index = int(''.join(new_ID[4:]))
@@ -135,10 +135,10 @@ def incriment_ID(ID):
 	elif len(job['order'])-1 > exp_index:
 		tas_index = 0
 		exp_index += 1
-	
+
 	new_ID = str(job_index).rjust(2, '0')
 	new_ID+= str(exp_index).rjust(2, '0')
-	new_ID+= str(tas_index).rjust(2, '0')					
+	new_ID+= str(tas_index).rjust(2, '0')
 
 	if new_ID == ID:
 		new_ID = None
@@ -149,7 +149,7 @@ def incriment_ID(ID):
 		return None
 
 def decriment_ID(ID):
-	'''Tries to decriment to the previous task in the experiment. 
+	'''Tries to decriment to the previous task in the experiment.
 	If the first task in the experiment, goes to the last task in the previous one.
 	If the first experiment in the job, returns None.'''
 	global jobs
@@ -229,11 +229,9 @@ def initialise_day(work_hours, workday_start, workday_end):
 	# Also add one for night time slots
 	job_schedules.append([[] for i in range(work_hours)])
 
-	## TODO: Impliment Night time
-	# schedule[0] is 00:00 on monday. I want both 00:00-08:00 and 16:00-23:55 to be occupied before we start.
-	day_length    = get_5_min_time(24,00)
+	day_length = get_5_min_time(24,00)
 
-	# print('A day is %d slots long. I want to start at slot %d and finish at slot %d each day.' % 
+	# print('A day is %d slots long. I want to start at slot %d and finish at slot %d each day.' %
 	# 	(day_length, workday_start, workday_end))
 
 	# Add in a blocking task, to account for night times
@@ -270,8 +268,8 @@ for job in jobs:
 	print(job['jobName'])
 
 	order = job['order']
-	
-	for exp_name in order:	
+
+	for exp_name in order:
 		experiment = job[exp_name]
 		print('Experiment %s, will take minimum %d minutes' % (exp_name, 5*get_exp_time(job, exp_name)))
 		for task in experiment:
@@ -279,7 +277,7 @@ for job in jobs:
 			task_ID = construct_ID(jobs.index(job), job['order'].index(exp_name), experiment.index(task))
 
 			print('Task ID: %s' % (task_ID))
-			print('- Label:    %-20s\n- Time req: %-5d\n- Active?   %d\n- Flexible? %d' % 
+			print('- Label:    %-20s\n- Time req: %-5d\n- Active?   %d\n- Flexible? %d' %
 				  (task['name'], task['time']*5, task['active'], task['flexible']))
 		print('\n')
 	print('\n')
@@ -303,7 +301,7 @@ for i in range(len(jobs)):
 
 
 # This version is rewritten to satisfy new constraints - i.e. allow for some experiments to not be flexible.
-# I'll instead consider inflexible experiments as pseudo-tasks. 
+# I'll instead consider inflexible experiments as pseudo-tasks.
 # This time, I will try to place the next 'task' that is prefereable, and slide it along the schedule from the beginning until it fits in.
 # This version will always queue the longest experiment's next task.
 if version == 0:
@@ -312,7 +310,7 @@ if version == 0:
 
 	if debug:
 		print("\n\nUsing the new version of the scheduler.")
-	
+
 	skipped_tasks = []
 
 	while current_tasks.count(None) != len(current_tasks):
@@ -325,7 +323,7 @@ if version == 0:
 				job_index, exp_index, tas_index = parse_ID(ID)
 				task = get_task(ID)
 
-				print('ID: %s\n- Job:       %s\n- Task Name: %s' % 
+				print('ID: %s\n- Job:       %s\n- Task Name: %s' %
 					(ID, jobs[job_index]['order'][exp_index], task['name']))
 
 		longest_exp = 0
@@ -359,19 +357,19 @@ if version == 0:
 			job_index, exp_index, tas_index = parse_ID(next_task_ID)
 			experiment_name = jobs[job_index]['order'][exp_index]
 			experiment = jobs[job_index][experiment_name]
-			
+
 			if debug:
 				print('Task %s is inflexible. Constructing a pseudo-task of this experiment...' % next_task_ID)
-			
+
 			ID = next_task_ID
-			
+
 			for task in experiment:
 				if debug:
 					print(task)
 
 				task_schedule += [ID for i in range(task['time'])]
 				ID = incriment_ID(ID)
-		
+
 		# if debug:
 		# 	for i in range(len(task_schedule)):
 		# 		print('Slot: %3d - ID: %s' % (i, task_schedule[i]))
@@ -439,20 +437,20 @@ if version == 0:
 			print('Current tasks are:')
 			print(current_tasks)
 		# current_tasks = [None]
-		
+
 
 # This version is rewritten to satisfy new constraints - i.e. allow for some experiments to not be flexible.
-# I'll instead consider inflexible experiments as pseudo-tasks. 
+# I'll instead consider inflexible experiments as pseudo-tasks.
 # This time, I will try to place the next 'task' that is prefereable, and slide it along the schedule from the beginning until it fits in.
-# This version will check all permutations of the experiments. 
+# This version will check all permutations of the experiments.
 if version == 1:
 
 	import random as rand
 
 	if debug:
 		print("\n\nUsing the brute-force version of the scheduler.")
-	
-	
+
+
 	# how many tasks are there in my list?
 	n_tasks = 0
 	# how many jobs?
@@ -473,7 +471,8 @@ if version == 1:
 	best_schedule = [9999999, []]
 
 	n_individuals = 20
-	cohort =  rand.sample(xrange(final_perm), n_individuals)
+	task_keys = list(range(final_perm))
+	cohort =  rand.sample(task_keys, n_individuals)
 
 	for permutation in cohort:
 		# Re-initialise the schedules
@@ -506,7 +505,7 @@ if version == 1:
 					job_index, exp_index, tas_index = parse_ID(ID)
 					task = get_task(ID)
 
-					print('ID: %s\n- Job:       %s\n- Task Name: %s' % 
+					print('ID: %s\n- Job:       %s\n- Task Name: %s' %
 						(ID, jobs[job_index]['order'][exp_index], task['name']))
 
 			# Start off with the ideal next task ID
@@ -544,19 +543,19 @@ if version == 1:
 				job_index, exp_index, tas_index = parse_ID(next_task_ID)
 				experiment_name = jobs[job_index]['order'][exp_index]
 				experiment = jobs[job_index][experiment_name]
-				
+
 				if debug:
 					print('Task %s is inflexible. Constructing a pseudo-task of this experiment...' % next_task_ID)
-				
+
 				ID = next_task_ID
-				
+
 				for task in experiment:
 					if debug:
 						print(task)
 
 					task_schedule += [[ID] for i in range(task['time'])]
 					ID = incriment_ID(ID)
-			
+
 			# if debug:
 			# 	for i in range(len(task_schedule)):
 			# 		print('Slot: %3d - ID: %s' % (i, task_schedule[i]))
@@ -631,7 +630,7 @@ if version == 1:
 				job_index, exp_index, tas_index = parse_ID(ID)
 				task = get_task(ID)
 
-				print('ID: %s\n- Job:       %s\n- Task Name: %s\n- slots:     %s' % 
+				print('ID: %s\n- Job:       %s\n- Task Name: %s\n- slots:     %s' %
 					(ID, jobs[job_index]['order'][exp_index], task['name'], task['time']))
 
 
@@ -658,10 +657,10 @@ if version == 2:
 
 	for job in jobs:
 		experiment = job['order'][0]
-		
+
 		exp_time = get_exp_time(job, experiment)
 
-		print('\nJob: %s (%s)\nExperiment: %s -- Time: %d min\n' % 
+		print('\nJob: %s (%s)\nExperiment: %s -- Time: %d min\n' %
 			(job['jobName'], str(jobs.index(job)).rjust(2, '0'), experiment, exp_time*5))
 		if exp_time > longest_exp:
 			longest_exp = exp_time
@@ -693,7 +692,7 @@ if version == 2:
 		for ID in slot:
 			task = get_task(ID)
 			print('ID: %s --- Active: %d' % (ID, task['active']))
-		
+
 		# Check that the last task we were looking at has been fully allocated
 		for job in jobs:
 			job_index = str(jobs.index(job)).rjust(2, '0')
@@ -729,7 +728,7 @@ if version == 2:
 								# if inactive, add the proper number of elements to the list
 								start_index = i
 								while (not task['active']):
-									print('Popping an inactive task, %s, to the queue, from %d to %d' % 
+									print('Popping an inactive task, %s, to the queue, from %d to %d' %
 										(new_ID, start_index+1, start_index+1+task['time']))
 									print('---')
 									for j in range(start_index, start_index+task['time']):
@@ -762,8 +761,8 @@ if version == 2:
 
 		for ID in current_tasks:
 			task = get_task(ID)
-			# If the task 
-			# First determine what the active tasks are. 
+			# If the task
+			# First determine what the active tasks are.
 			if task != None:
 				# We want to only consider tasks that fill two criteria:
 				# - Active tasks
@@ -809,7 +808,7 @@ if version == 2:
 				schedule[i].append(next_task_ID)
 
 				job_index = ''.join(list(next_task_ID)[:2])
-				
+
 				job_schedules[int(job_index)][i].append(next_task_ID)
 
 
@@ -874,7 +873,7 @@ if skipped_tasks:
 		job_index, exp_index, tas_index = parse_ID(ID)
 		task = get_task(ID)
 
-		print('ID: %s\n- Job:       %s\n- Task Name: %s\n- slots:     %s' % 
+		print('ID: %s\n- Job:       %s\n- Task Name: %s\n- slots:     %s' %
 			(ID, jobs[job_index]['order'][exp_index], task['name'], task['time']))
 
 
