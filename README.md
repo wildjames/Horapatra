@@ -7,7 +7,7 @@ The name is a portmanteau of two historical figures - Cleopatra (not the queen) 
 
 The other component is from the Horae, the greek gods of the passage of time, from which we get the word "hours". 
 
-If you find a bug, please let me know! [Email](wild.james343@gmail.com)
+If you find a bug, please let me know!
 
 # Schedule Solving 
 The code was intentionally structured to recieve some preferred next job to push into the schedule at the first possible slot, then do that. If no slot could be found, an extra workday would be added to the schedule template in an effort to remedy this. In this way, the schedule produced is largely dependant on the input permutation of which jobs to pop in next.
@@ -45,8 +45,6 @@ The program can now be run by the command `./main.pyw`, or however you like to l
 
 ## Windows
 For windows, `.pyw` files are automatically executed with python, so all you have to do is copy the BigBitches shortcut to your desktop (or wherever), and double-click it. Be aware! you still need to have python installed for this to work properly!
-
-To install python, get [The latest version](https://www.python.org/ftp/python/2.7.14/python-2.7.14.msi), and install that. It should then work fine. [There are loads of tutorials online to install python](https://www.howtogeek.com/197947/how-to-install-python-on-windows/) - you want python 2.7.
 
 # Usage
 The GUI follows a few steps. From the beginning;
