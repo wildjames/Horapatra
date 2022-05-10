@@ -1,16 +1,16 @@
 # Horapatra
-This is a scheduling algorthim, written to help in arranging overlapping chemistry experiments in the most efficient way we can. I mainly wanted to fiddle about with solving some kind of discrete problem, where hill climbers aren't the best way forward. It came down to between a neural net (boring, been there, done that) and a genetic algorithm (New! Shiny!), so here we are.
+This is a scheduling algorthim, written to help in arranging overlapping chemistry experiments in the most efficient way we can. I mainly wanted to fiddle about with solving some kind of discrete problem, where hill climbers aren't the best way forward.
 
 The name is a portmanteau of two historical figures - Cleopatra (not the queen) was an ancient alchemist. From wikipedia:
-
-> Cleopatra the Alchemist, who likely lived during the 3rd century, was a Greek Egyptian alchemist, author, and philosopher. She experimented with practical alchemy but is also credited as one of the four female alchemists that could produce the Philosopher's stone. She is considered to be the inventor of the Alembic, an early tool for analytic chemistry.
-
-The other component is from the Horae, the greek gods of the passage of time, from which we get the word "hours". 
+'''
+Cleopatra the Alchemist, who likely lived during the 3rd century, was a Greek Egyptian alchemist, author, and philosopher. She experimented with practical alchemy but is also credited as one of the four female alchemists that could produce the Philosopher's stone. She is considered to be the inventor of the Alembic, an early tool for analytic chemistry.
+'''
+The other component is from the Horae, the greek gods of the passage of time. 
 
 If you find a bug, please let me know!
 
 # Schedule Solving 
-The code was intentionally structured to recieve some preferred next job to push into the schedule at the first possible slot, then do that. If no slot could be found, an extra workday would be added to the schedule template in an effort to remedy this. In this way, the schedule produced is largely dependant on the input permutation of which jobs to pop in next.
+The code was structured to recieve some preferred next job to push into the schedule at the first possible slot, then do that. If no slot could be found, an extra workday would be added to the schedule template in an effort to remedy this. In this way, the schedule produced is largely dependant on the input permutation of which jobs to pop in next.
 
 ## Optimisation Method
 The main issue with this project was how to decide which task to prefer to queue for the next insertion. Because this is a problem in which we are searching for the optimum permutation, not an optimum value, (therefore, the parameter space is highly complex - a small change can propegate to a significant difference in solution) I could not think of an easy method to search all possible permutations of job order. For example, with 2 jobs each of 3 experiments and 3 (flexible) tasks, a very limited version of the problem, there would be 262,143 different permutations to check. More realistic examples become fairly prohibitive in calculation time, expecially as the required time to generate a schedule increases as more jobs are supplied.
